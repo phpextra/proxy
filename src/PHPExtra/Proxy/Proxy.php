@@ -2,19 +2,19 @@
 
 namespace PHPExtra\Proxy;
 
+use PHPExtra\EventManager\Event\CancellableEventInterface;
+use PHPExtra\EventManager\EventManagerAwareInterface;
+use PHPExtra\EventManager\EventManagerInterface;
 use PHPExtra\Proxy\Engine\ProxyEngineInterface;
+use PHPExtra\Proxy\Event\ProxyEngineEvent;
 use PHPExtra\Proxy\Event\ProxyEventInterface;
 use PHPExtra\Proxy\Event\ProxyExceptionEvent;
-use PHPExtra\Proxy\Event\ProxyEngineEvent;
 use PHPExtra\Proxy\Event\ProxyRequestEvent;
 use PHPExtra\Proxy\Event\ProxyResponseEvent;
 use PHPExtra\Proxy\EventListener\DefaultProxyListener;
 use PHPExtra\Proxy\EventListener\ProxyEngineListener;
 use PHPExtra\Proxy\EventListener\ProxyListenerInterface;
 use PHPExtra\Proxy\Http\RequestInterface;
-use PHPExtra\EventManager\Event\CancellableEventInterface;
-use PHPExtra\EventManager\EventManagerAwareInterface;
-use PHPExtra\EventManager\EventManagerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -100,18 +100,17 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
      */
     private function init()
     {
-        if(!$this->isInitialized){
+        if (!$this->isInitialized) {
 
-            if(!$this->logger){
+            if (!$this->logger) {
                 $this->logger = new NullLogger();
             }
 
             $this->eventManager
                 ->addListener(new ProxyEngineListener($this->engine))
-                ->addListener(new DefaultProxyListener())
-            ;
+                ->addListener(new DefaultProxyListener());
 
-            foreach($this->listeners as $listener){
+            foreach ($this->listeners as $listener) {
                 $this->eventManager->addListener($listener[0], $listener[1]);
             }
 
@@ -126,13 +125,13 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     {
         $this->init();
 
-        try{
+        try {
             $response = $this->callProxyEvent(new ProxyRequestEvent($request))->getResponse();
             // if response is present, all engines should skip it passing given response
             $response = $this->callProxyEvent(new ProxyEngineEvent($request, $response))->getResponse();
             // response is now ready - if present, for post processing
             $response = $this->callProxyEvent(new ProxyResponseEvent($request, $response))->getResponse();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             $response = $this->callProxyEvent(new ProxyExceptionEvent($e, $request));
         }
 
@@ -149,17 +148,17 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
      */
     private function callProxyEvent(ProxyEventInterface $event)
     {
-        if($event instanceof LoggerAwareInterface){
+        if ($event instanceof LoggerAwareInterface) {
             $event->setLogger($this->logger);
         }
 
         $this->eventManager->trigger($event);
 
-        if($event instanceof CancellableEventInterface && $event->isCancelled()){
+        if ($event instanceof CancellableEventInterface && $event->isCancelled()) {
             throw $this->createProxyException('Proxy cancelled your request');
         }
 
-        if($event instanceof ProxyResponseEvent && !$event->hasResponse()){
+        if ($event instanceof ProxyResponseEvent && !$event->hasResponse()) {
             throw $this->createProxyException('Proxy was unable to complete your request (empty response)');
         }
 
