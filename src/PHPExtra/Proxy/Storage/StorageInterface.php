@@ -32,11 +32,18 @@ interface StorageInterface
     public function has(RequestInterface $request);
 
     /**
-     * @param ResponseInterface $response
      * @param RequestInterface  $request
+     * @param ResponseInterface $response
      * @param int               $lifetime
      *
      * @return $this
      */
-    public function save(ResponseInterface $response, RequestInterface $request, $lifetime = null);
+    public function save(RequestInterface $request, ResponseInterface $response, $lifetime = null);
+
+    /**
+     * @param RequestInterface $request
+     *
+     * @return $this
+     */
+    public function delete(RequestInterface $request);
 }

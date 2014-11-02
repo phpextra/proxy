@@ -9,26 +9,22 @@ namespace PHPExtra\Proxy\Storage;
 
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\ResponseInterface;
-use Doctrine\Common\Cache\Cache;
 
 /**
- * The DoctrineStorage class
+ * The InMemoryStorage for testing purposes
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class DoctrineStorage implements StorageInterface
+class InMemoryStorage implements StorageInterface
 {
     /**
-     * @var Cache
+     * @var \SplObjectStorage
      */
-    private $doctrineCacheAdapter;
+    private $storage;
 
-    /**
-     * @param Cache $doctrineCacheAdapter
-     */
-    function __construct(Cache $doctrineCacheAdapter)
+    function __construct()
     {
-        $this->doctrineCacheAdapter = $doctrineCacheAdapter;
+        $this->storage = new \SplObjectStorage();
     }
 
     /**
@@ -36,7 +32,7 @@ class DoctrineStorage implements StorageInterface
      */
     public function fetch(RequestInterface $request)
     {
-        return $this->doctrineCacheAdapter->fetch($request->getFingerprint());
+        return $this->storage->offsetGet($request);
     }
 
     /**
@@ -44,7 +40,7 @@ class DoctrineStorage implements StorageInterface
      */
     public function has(RequestInterface $request)
     {
-        return $this->doctrineCacheAdapter->fetch($request->getFingerprint());
+        return $this->storage->contains($request);
     }
 
     /**
@@ -52,7 +48,8 @@ class DoctrineStorage implements StorageInterface
      */
     public function save(RequestInterface $request, ResponseInterface $response, $lifetime = null)
     {
-        $this->doctrineCacheAdapter->save($request->getFingerprint(), $response, $lifetime);
+        $this->storage->offsetSet($request, $response);
+
         return $this;
     }
 
@@ -61,7 +58,7 @@ class DoctrineStorage implements StorageInterface
      */
     public function delete(RequestInterface $request)
     {
-        $this->doctrineCacheAdapter->delete($request->getFingerprint());
+        $this->storage->offsetUnset($request);
 
         return $this;
     }

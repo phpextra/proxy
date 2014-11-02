@@ -65,4 +65,14 @@ class Response extends \Symfony\Component\HttpFoundation\Response implements Res
     {
         return $this->headers->get($name, $default);
     }
+
+    /**
+     * Returns true if cache is private
+     *
+     * @return bool
+     */
+    public function isPrivate()
+    {
+        return $this->getHeader('cache-control') == 'private';
+    }
 }

@@ -5,6 +5,8 @@ namespace PHPExtra\Proxy;
 use PHPExtra\EventManager\Event\CancellableEventInterface;
 use PHPExtra\EventManager\EventManagerAwareInterface;
 use PHPExtra\EventManager\EventManagerInterface;
+use PHPExtra\Proxy\Cache\CacheManagerInterface;
+use PHPExtra\Proxy\Cache\DefaultCacheManager;
 use PHPExtra\Proxy\Engine\ProxyEngineInterface;
 use PHPExtra\Proxy\Event\ProxyEngineEvent;
 use PHPExtra\Proxy\Event\ProxyEventInterface;
@@ -12,9 +14,11 @@ use PHPExtra\Proxy\Event\ProxyExceptionEvent;
 use PHPExtra\Proxy\Event\ProxyRequestEvent;
 use PHPExtra\Proxy\Event\ProxyResponseEvent;
 use PHPExtra\Proxy\EventListener\DefaultProxyListener;
+use PHPExtra\Proxy\EventListener\ProxyCacheListener;
 use PHPExtra\Proxy\EventListener\ProxyEngineListener;
 use PHPExtra\Proxy\EventListener\ProxyListenerInterface;
 use PHPExtra\Proxy\Http\RequestInterface;
+use PHPExtra\Proxy\Storage\FilesystemStorage;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -39,6 +43,11 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
      * @var EventManagerInterface
      */
     private $eventManager;
+
+    /**
+     * @var CacheManagerInterface
+     */
+    private $cacheManager;
 
     /**
      * @var LoggerInterface
@@ -86,6 +95,18 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     }
 
     /**
+     * @param CacheManagerInterface $cacheManager
+     *
+     * @return $this
+     */
+    public function setCacheManager($cacheManager)
+    {
+        $this->cacheManager = $cacheManager;
+
+        return $this;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function setLogger(LoggerInterface $logger)
@@ -106,9 +127,15 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
                 $this->logger = new NullLogger();
             }
 
+            if(!$this->cacheManager){
+                $this->cacheManager = new DefaultCacheManager(new FilesystemStorage());
+            }
+
             $this->eventManager
                 ->addListener(new ProxyEngineListener($this->engine))
-                ->addListener(new DefaultProxyListener());
+                ->addListener(new DefaultProxyListener())
+                ->addListener(new ProxyCacheListener($this->cacheManager))
+            ;
 
             foreach ($this->listeners as $listener) {
                 $this->eventManager->addListener($listener[0], $listener[1]);

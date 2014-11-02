@@ -24,11 +24,10 @@ interface ResponseInterface
 
     public function getBody();
 
+    /**
+     * @return string
+     */
     public function getCharset();
-
-    public function isInvalid();
-
-    public function isInformational();
 
     public function isSuccessful();
 
@@ -46,9 +45,25 @@ interface ResponseInterface
 
     public function isRedirect();
 
+    /**
+     * Returns true if age > 0
+     *
+     * @return bool
+     */
     public function isFresh();
 
+    /**
+     * @deprecated
+     * @return bool
+     */
     public function isCacheable();
+
+    /**
+     * Returns true if cache is private
+     *
+     * @return bool
+     */
+    public function isPrivate();
 
     public function getAge();
 
