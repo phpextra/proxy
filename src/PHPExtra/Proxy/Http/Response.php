@@ -14,25 +14,7 @@ namespace PHPExtra\Proxy\Http;
  */
 class Response extends \Symfony\Component\HttpFoundation\Response implements ResponseInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function addHeader($name, $value)
-    {
-        $this->headers->set($name, $value);
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function removeHeader($name)
-    {
-        $this->headers->remove($name);
-
-        return $this;
-    }
+    use HttpMessageTrait;
 
     /**
      * {@inheritdoc}
@@ -53,26 +35,38 @@ class Response extends \Symfony\Component\HttpFoundation\Response implements Res
     /**
      * {@inheritdoc}
      */
-    public function hasHeader($name)
+    public function isPrivate()
     {
-        return $this->headers->has($name);
+        return $this->hasHeaderWithValue('Cache-Control', 'private');
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getHeader($name, $default = null)
+    public function getDate()
     {
-        return $this->headers->get($name, $default);
+        $date = $this->headers->getDate('Date', null);
+        if($date === null){
+            $this->setDate(new \DateTime('now'));
+        }
+
+        return parent::getDate();
     }
 
+
     /**
-     * Returns true if cache is private
-     *
-     * @return bool
+     * {@inheritdoc}
      */
-    public function isPrivate()
+    public function getExpireDate()
     {
-        return $this->getHeader('cache-control') == 'private';
+        //@todo think about using age directive ?
+        if($this->hasHeader('Max-Age')){
+            $maxAgeInterval = new \DateInterval(sprintf('P%sS', $this->getMaxAge()));
+            $date = $this->getDate()->add($maxAgeInterval);
+        }else{
+            $date = $this->getExpires();
+        }
+
+        return $date;
     }
 }

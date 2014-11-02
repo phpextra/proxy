@@ -5,7 +5,6 @@ namespace PHPExtra\Proxy\Event;
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\ResponseInterface;
 use PHPExtra\EventManager\Event\CancellableEvent;
-use PHPExtra\EventManager\Event\CancellableEventInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 

@@ -12,11 +12,11 @@ use PHPExtra\Proxy\Http\ResponseInterface;
 use Doctrine\Common\Cache\Cache;
 
 /**
- * The DoctrineStorage class
+ * The DoctrineCacheStorage class
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class DoctrineStorage implements StorageInterface
+class DoctrineCacheStorage implements StorageInterface
 {
     /**
      * @var Cache

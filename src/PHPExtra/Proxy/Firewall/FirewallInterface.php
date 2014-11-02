@@ -7,6 +7,8 @@
 
 namespace PHPExtra\Proxy;
 
+use PHPExtra\Proxy\Http\RequestInterface;
+
 /**
  * The FirewallInterface interface
  *
@@ -14,11 +16,30 @@ namespace PHPExtra\Proxy;
  */
 interface FirewallInterface
 {
-    public function allowClientIp($ip);
+    /**
+     * Allow given IP to use the proxy
+     *
+     * @param string $ip
+     *
+     * @return $this
+     */
+    public function allowIp($ip);
 
-    public function denyClientIp($ip);
+    /**
+     * Allow to make proxy requests for given domain
+     *
+     * @param string $domain
+     *
+     * @return $this
+     */
+    public function allowDomain($domain);
 
-    public function isClientIpAllowed($ip);
-
-    public function isUrlAllowed($url);
+    /**
+     * Tell if current request is allowed depending on firewall rules
+     *
+     * @param RequestInterface $request
+     *
+     * @return bool
+     */
+    public function isAllowed(RequestInterface $request);
 }

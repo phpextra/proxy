@@ -12,7 +12,7 @@ namespace PHPExtra\Proxy\Http;
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-interface RequestInterface
+interface RequestInterface extends HttpMessageInterface
 {
     /**
      * Get request fingerprint
@@ -30,32 +30,7 @@ interface RequestInterface
     /**
      * @return string
      */
-    public function getSchemeAndHttpHost();
-
-    /**
-     * @return string
-     */
-    public function getUri();
-
-    /**
-     * @return string
-     */
     public function getContentType();
-
-    /**
-     * @return string
-     */
-    public function getQueryString();
-
-    /**
-     * @return string
-     */
-    public function getBasePath();
-
-    /**
-     * @return string
-     */
-    public function getBaseUrl();
 
     /**
      * @return string
@@ -73,14 +48,7 @@ interface RequestInterface
     public function getHost();
 
     /**
-     * Returns the HTTP host being requested.
-     *
-     * @return string
-     */
-    public function getHttpHost();
-
-    /**
-     * @return string
+     * @return array
      */
     public function getETags();
 
@@ -90,46 +58,9 @@ interface RequestInterface
     public function getPort();
 
     /**
-     * @return bool
-     */
-    public function isNoCache();
-
-    /**
      * @return array
      */
     public function getCookies();
-
-    /**
-     * @param string $name
-     * @param string $value
-     *
-     * @return $this
-     */
-    public function addHeader($name, $value);
-
-    /**
-     * @return $this
-     */
-    public function removeHeader($name);
-
-    /**
-     * @return array
-     */
-    public function getHeaders();
-
-    /**
-     * @param string $name
-     *
-     * @return string
-     */
-    public function getHeader($name, $default = null);
-
-    /**
-     * @param string $name
-     *
-     * @return bool
-     */
-    public function hasHeader($name);
 
     /**
      * @return array
@@ -142,14 +73,19 @@ interface RequestInterface
     public function getQueryParams();
 
     /**
-     * @param bool $asResource
-     *
-     * @return string|resource
-     */
-    public function getContent($asResource = false);
-
-    /**
      * @return string
      */
     public function getClientIp();
+
+    /**
+     * Get the max accepted response age
+     *
+     * @return \DateTime
+     */
+    public function getMaxAge();
+
+    /**
+     * @return bool
+     */
+    public function isNoCache();
 }

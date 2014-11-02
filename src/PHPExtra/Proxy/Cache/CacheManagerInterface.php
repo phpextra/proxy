@@ -18,7 +18,7 @@ use PHPExtra\Proxy\Http\ResponseInterface;
 interface CacheManagerInterface
 {
     /**
-     * Set default lifetime for stored responses
+     * Set default lifetime for response if it does not contain the max-age directive
      *
      * @param int $lifetime
      *

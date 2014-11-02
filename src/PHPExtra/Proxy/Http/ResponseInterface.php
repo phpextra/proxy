@@ -12,16 +12,27 @@ namespace PHPExtra\Proxy\Http;
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-interface ResponseInterface
+interface ResponseInterface extends HttpMessageInterface
 {
-    public function getMaxAge();
-
-    public function getTtl();
-
+    /**
+     * Length in bytes
+     *
+     * @return int
+     */
     public function getLength();
 
+    /**
+     * Get HTTP status code
+     *
+     * @return int
+     */
     public function getStatusCode();
 
+    /**
+     * Get response body
+     *
+     * @return string
+     */
     public function getBody();
 
     /**
@@ -29,53 +40,73 @@ interface ResponseInterface
      */
     public function getCharset();
 
+    /**
+     * @return bool
+     */
     public function isSuccessful();
 
+    /**
+     * @return bool
+     */
     public function isRedirection();
 
+    /**
+     * @return bool
+     */
     public function isClientError();
 
+    /**
+     * @return bool
+     */
     public function isOk();
 
+    /**
+     * @return bool
+     */
     public function isNotFound();
 
+    /**
+     * @return bool
+     */
     public function isForbidden();
 
+    /**
+     * @return bool
+     */
     public function isEmpty();
 
-    public function isRedirect();
-
     /**
-     * Returns true if age > 0
+     * Returns true if ttl is > 0
+     * TTL is dateExpire - responseDate
      *
      * @return bool
      */
     public function isFresh();
 
     /**
-     * @deprecated
-     * @return bool
-     */
-    public function isCacheable();
-
-    /**
-     * Returns true if cache is private
+     * Returns true if response is marked private
      *
      * @return bool
      */
     public function isPrivate();
 
-    public function getAge();
+    /**
+     * Get max response age in seconds
+     *
+     * @return int
+     */
+    public function getMaxAge();
 
-    public function expire();
+    /**
+     * @return \DateTime
+     */
+    public function getDate();
 
-    public function getExpires();
+    /**
+     * Returns the response expiration date or null if it was not possible
+     *
+     * @return \DateTime
+     */
+    public function getExpireDate();
 
-    public function addHeader($name, $value);
-
-    public function removeHeader($name);
-
-    public function hasHeader($name);
-
-    public function getHeader($name, $default = null);
 }

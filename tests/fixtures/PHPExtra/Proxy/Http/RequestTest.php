@@ -13,8 +13,10 @@ class RequestTest extends PHPUnit_Framework_TestCase
         $request = new \PHPExtra\Proxy\Http\Request();
         $request->addHeader('Test', 123);
 
-        $this->assertEquals(123, $request->getHeader('Test'));
-        $this->assertEquals(123, $request->getHeader('test'));
+        $value = $request->getHeader('Test');
+
+        $this->assertTrue($request->hasHeaderWithValue('Test', 123));
+        $this->assertEquals(123, $value[0]);
     }
 
     public function testGivenRequestObjectIsAbleToCheckForHeaderExistence()
@@ -22,7 +24,6 @@ class RequestTest extends PHPUnit_Framework_TestCase
         $request = new \PHPExtra\Proxy\Http\Request();
         $request->addHeader('Test', 123);
 
-        $this->assertTrue($request->hasHeader('Test'));
         $this->assertTrue($request->hasHeader('test'));
     }
 }

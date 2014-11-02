@@ -62,11 +62,12 @@ class Guzzle4Engine extends AbstractProxyEngine
         }
 
         $headers['X-Forwarded-For'] = $request->getClientIp();
+        $headers['X-Forwarded-Proto'] = $request->getScheme();
 
         // see http://guzzle.readthedocs.org/en/latest/clients.html#request-options
         $guzzleRequest = $this->client->createRequest(
             $request->getMethod(),
-            $request->getUri(),
+            $request->getRequestUri(),
             array(
                 'headers'       => $headers,
                 'body'          => $request->getPostParams(),

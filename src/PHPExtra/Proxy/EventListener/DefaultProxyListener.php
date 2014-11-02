@@ -33,16 +33,14 @@ class DefaultProxyListener implements ProxyListenerInterface
         if (!$event->isCancelled()) {
 
             $request = $event->getRequest();
-            $event->getLogger()->debug(sprintf('%s', $event->getRequest()->getUri()));
+            $event->getLogger()->debug(sprintf('%s', $event->getRequest()->getRequestUri()));
 
-            $headerName = 'X-Proxy-Marker';
-
-            if ($request->getHeader($headerName, false) !== false) {
+            if ($request->hasHeader('X-Proxy-Marker')) {
                 $response = new Response('Proxy server made a call to itself that cannot be handled', 403);
                 $event->setResponse($response);
             } else {
-                $event->getLogger()->debug(sprintf('Added %s header to request object', $headerName));
-                $request->addHeader($headerName, '1');
+                $event->getLogger()->debug(sprintf('Added %s header to request object', 'X-Proxy-Marker'));
+                $request->addHeader('X-Proxy-Marker', '1');
             }
 
         }
@@ -94,7 +92,7 @@ class DefaultProxyListener implements ProxyListenerInterface
     {
         if ($event->hasResponse()) {
             $params = array(
-                $event->getRequest()->getUri(),
+                $event->getRequest()->getRequestUri(),
                 $event->getResponse()->getLength(),
                 $event->getResponse()->getStatusCode(),
             );

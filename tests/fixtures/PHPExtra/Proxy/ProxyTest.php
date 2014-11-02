@@ -1,8 +1,5 @@
 <?php
 
-use PHPExtra\Proxy\Engine\Dummy\DummyEngine;
-use PHPExtra\Proxy\ProxyInterface;
-
 /**
  * The ProxyTest class
  *
@@ -12,44 +9,95 @@ class ProxyTest extends ProxyTestCase
 {
     public function testProxyIsAbleToHandleBasicRequest()
     {
-        $request = \PHPExtra\Proxy\Http\Request::create('/index.html');
+        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/index.html');
         $response = $this->proxy->handle($request);
 
         $this->assertEquals(200, $response->getStatusCode());
     }
 
-    public function testProxyReturnsCachedResponse()
+    public function testProxyReturnsCachedResponseWhenResponseIsFresh()
     {
-        $this->markTestIncomplete('wrong result');
+        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/index.html');
+        $response = new \PHPExtra\Proxy\Http\Response('Cached response', 200);
+        $response->setMaxAge(100);
 
-        $request = \PHPExtra\Proxy\Http\Request::create('/index.html');
-        $this->storage->save($request, new \PHPExtra\Proxy\Http\Response('Cached response', 200));
-
+        $this->storage->save($request, $response);
         $response = $this->proxy->handle($request);
 
         $this->assertEquals('Cached response', $response->getBody());
     }
 
+    public function testProxyDoesNotReturnCachedResponseWhenResponseIsNotFresh()
+    {
+        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/index.html');
+        $response = new \PHPExtra\Proxy\Http\Response('Cached response', 200);
+        $response->setMaxAge(0);
+
+        $this->storage->save($request, $response);
+        $response = $this->proxy->handle($request);
+
+        $this->assertEquals('OK', $response->getBody());
+    }
+
     public function testProxyReturnsFreshResponseForNoCacheRequest()
     {
-        $request = \PHPExtra\Proxy\Http\Request::create('/index.html');
+        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/index.html');
         $request->addHeader('Cache-Control', 'no-cache');
         $this->storage->save($request, new \PHPExtra\Proxy\Http\Response('Fake response', 500));
 
         $response = $this->proxy->handle($request);
-        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('OK', $response->getBody());
     }
 
     public function testProxyReturnsFreshResponseForMaxAgeZeroRequest()
     {
-        $this->markTestIncomplete();
+        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/index.html');
+        $request->addHeader('Max-Age', '0');
+        $this->storage->save($request, new \PHPExtra\Proxy\Http\Response('Fake response', 500));
+
+        $response = $this->proxy->handle($request);
+        $this->assertEquals('OK', $response->getBody());
     }
 
     public function testProxyReturnsFreshResponseForNoStoreRequest()
     {
-        $this->markTestIncomplete();
+        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/index.html');
+        $request->addHeader('Cache-Control', 'no-store');
+        $this->storage->save($request, new \PHPExtra\Proxy\Http\Response('Fake response', 500));
+
+        $response = $this->proxy->handle($request);
+
+        $this->assertEquals('OK', $response->getBody());
     }
 
+    public function testProxyReturnsFreshResponseIfClientMaxAgeIsLessThanResponseAge()
+    {
+        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/index.html');
+        $request->addHeader('Max-Age', 60);
+
+        $response = new \PHPExtra\Proxy\Http\Response('Cached response', 200);
+        $newDate = $response->getDate()->sub(new \DateInterval('PT120S'));
+        $response->setDate($newDate); // response returns always NOW if no date was set @todo fixme
+
+        $this->storage->save($request, $response);
+
+        $response = $this->proxy->handle($request);
+        $this->assertEquals('OK', $response->getBody());
+    }
+
+    public function testProxyReturnsCachedResponseIfClientMaxAgeIsGreaterThanResponseAge()
+    {
+        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/index.html');
+        $request->addHeader('Max-Age', 3600);
+
+        $response = new \PHPExtra\Proxy\Http\Response('Cached response', 200);
+        $response->setHeader('Max-Age', 1800);
+
+        $this->storage->save($request, $response);
+
+        $response = $this->proxy->handle($request);
+        $this->assertEquals('Cached response', $response->getBody());
+    }
 
 }
  

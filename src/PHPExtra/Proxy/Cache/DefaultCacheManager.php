@@ -23,7 +23,7 @@ class DefaultCacheManager implements CacheManagerInterface
      */
     private $storage;
 
-    /**s
+    /**
      * @var int
      */
     private $lifetime = 3600;
@@ -55,12 +55,15 @@ class DefaultCacheManager implements CacheManagerInterface
 
             $response = $this->storage->fetch($request);
 
-            if($response !== null && $response->isFresh()){
+
+
+            if($response === null){
+                $this->storage->delete($request);
+            }elseif($this->isResponseFreshEnoughForTheClient($request, $response)){
                 $this->addCacheHitResponseHeaders($response);
                 return $response;
-            }else{
-                $this->storage->delete($request);
             }
+
         }
 
         return null;
@@ -79,9 +82,47 @@ class DefaultCacheManager implements CacheManagerInterface
         return $this;
     }
 
+    /**
+     * Tell if given response with its max age is fresh enough for the client
+     * that can also request a response of some age
+     *
+     * @param RequestInterface  $request
+     * @param ResponseInterface $response
+     *
+     * @return bool
+     */
+    private function isResponseFreshEnoughForTheClient(RequestInterface $request, ResponseInterface $response)
+    {
+
+        $compare = array();
+        if($request->getMaxAge() !== null){
+            $compare[] = $request->getMaxAge();
+        }
+
+        if($response->getMaxAge() !== null){
+            $compare[] = $response->getMaxAge();
+        }
+
+        if(count($compare) == 0 || ($maxAge = min($compare)) <= 0){
+            return false;
+        }
+
+        $expirationDate = $response->getDate()->add(new \DateInterval(sprintf('PT%sS', $maxAge)));
+        $now = new \DateTime('now', $response->getDate()->getTimezone());
+
+        return $expirationDate >= $now;
+    }
+
+    /**
+     * Tell if current response comes from cache
+     *
+     * @param ResponseInterface $response
+     *
+     * @return bool
+     */
     private function isResponseFromCache(ResponseInterface $response)
     {
-        return $response->getHeader('x-cache') == 'HIT';
+        return $response->hasHeaderWithValue('X-Cache', 'HIT');
     }
 
     /**

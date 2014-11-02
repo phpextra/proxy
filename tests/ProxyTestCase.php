@@ -36,6 +36,7 @@ class ProxyTestCase extends PHPUnit_Framework_TestCase
         $logger = new \Psr\Log\NullLogger();
 
         $em = new \PHPExtra\EventManager\EventManager();
+        $em->setThrowExceptions(true);
         $em->setLogger($logger);
 
         $storage = new InMemoryStorage();

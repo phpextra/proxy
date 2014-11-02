@@ -4,15 +4,9 @@ namespace PHPExtra\Proxy\Provider\Silex;
 
 use PHPExtra\Proxy\Engine\Dummy\DummyEngine;
 use PHPExtra\Proxy\Engine\Guzzle4\Guzzle4Engine;
-use PHPExtra\Proxy\EventListener\ProxyCacheListener;
-use PHPExtra\Proxy\EventListener\ProxyLoggerListener;
-use PHPExtra\Proxy\EventListener\ProxyRequestListener;
-use PHPExtra\Proxy\EventListener\ProxyResponseListener;
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Proxy;
-use PHPExtra\Proxy\Storage\FilesystemStorage;
-use PHPExtra\Proxy\Voter\DefaultVoter;
-use PHPExtra\Proxy\Voter\VoterStack;
+use PHPExtra\Proxy\Storage\FilesystemCacheStorage;
 use GuzzleHttp\Client;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -96,32 +90,32 @@ class ProxyServiceProvider implements ServiceProviderInterface, ControllerProvid
         });
 
         $app['proxy.storage'] = $app->share(function(Application $app){
-            $stack = new FilesystemStorage($app['proxy.storage.filesystem.directory']);
+            $stack = new FilesystemCacheStorage($app['proxy.storage.filesystem.directory']);
             return $stack;
         });
 
-        $app['proxy.listeners'] = $app->share(function(Application $app){
-            return array(
-                new ProxyResponseListener(),
-                new ProxyCacheListener($app['proxy.storage'], $app['proxy.voter_stack']),
-                new ProxyRequestListener(),
-                new ProxyLoggerListener(),
-            );
-        });
-
-        $app['proxy.voter_stack'] = $app->share(function(Application $app){
-            $stack = new VoterStack($app['proxy.logger']);
-            foreach($app['proxy.voters'] as $voter){
-                $stack->addVoter($voter);
-            }
-            return $stack;
-        });
-
-        $app['proxy.voters'] = $app->share(function(){
-            return array(
-                new DefaultVoter()
-            );
-        });
+//        $app['proxy.listeners'] = $app->share(function(Application $app){
+//            return array(
+//                new ProxyResponseListener(),
+//                new ProxyCacheListener($app['proxy.storage'], $app['proxy.voter_stack']),
+//                new ProxyRequestListener(),
+//                new ProxyLoggerListener(),
+//            );
+//        });
+//
+//        $app['proxy.voter_stack'] = $app->share(function(Application $app){
+//            $stack = new VoterStack($app['proxy.logger']);
+//            foreach($app['proxy.voters'] as $voter){
+//                $stack->addVoter($voter);
+//            }
+//            return $stack;
+//        });
+//
+//        $app['proxy.voters'] = $app->share(function(){
+//            return array(
+//                new DefaultVoter()
+//            );
+//        });
 
         $app['proxy.controller'] = $app->protect(function(Application $app){
             return $app['proxy']->handle($app['request']);

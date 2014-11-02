@@ -18,7 +18,7 @@ use PHPExtra\Proxy\EventListener\ProxyCacheListener;
 use PHPExtra\Proxy\EventListener\ProxyEngineListener;
 use PHPExtra\Proxy\EventListener\ProxyListenerInterface;
 use PHPExtra\Proxy\Http\RequestInterface;
-use PHPExtra\Proxy\Storage\FilesystemStorage;
+use PHPExtra\Proxy\Storage\FilesystemCacheStorage;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -128,7 +128,7 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
             }
 
             if(!$this->cacheManager){
-                $this->cacheManager = new DefaultCacheManager(new FilesystemStorage());
+                $this->cacheManager = new DefaultCacheManager(new FilesystemCacheStorage());
             }
 
             $this->eventManager
@@ -152,15 +152,15 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     {
         $this->init();
 
-        try {
+//        try {
             $response = $this->callProxyEvent(new ProxyRequestEvent($request))->getResponse();
             // if response is present, all engines should skip it passing given response
             $response = $this->callProxyEvent(new ProxyEngineEvent($request, $response))->getResponse();
             // response is now ready - if present, for post processing
             $response = $this->callProxyEvent(new ProxyResponseEvent($request, $response))->getResponse();
-        } catch (\Exception $e) {
-            $response = $this->callProxyEvent(new ProxyExceptionEvent($e, $request));
-        }
+//        } catch (\Exception $e) {
+//            $response = $this->callProxyEvent(new ProxyExceptionEvent($e, $request))->getResponse();
+//        }
 
         return $response;
     }
