@@ -73,7 +73,7 @@ class ProxyCacheListener implements ProxyListenerInterface
 //    }
 //
 //    /**
-//     * Process request before it will go through proxy engine
+//     * Process request before it will go through proxy adapter
 //     *
 //     * @priority high
 //     *
@@ -111,7 +111,7 @@ class ProxyCacheListener implements ProxyListenerInterface
 //    }
 //
 //    /**
-//     * Process response returned by proxy engine
+//     * Process response returned by proxy adapter
 //     *
 //     * @priority low
 //     *

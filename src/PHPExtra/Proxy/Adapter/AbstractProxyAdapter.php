@@ -5,17 +5,17 @@
  * See the file LICENSE.txt for copying permission.
  */
 
-namespace PHPExtra\Proxy\Engine;
+namespace PHPExtra\Proxy\Adapter;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * The AbstractProxyEngine class
+ * The AbstractProxyAdapter class
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-abstract class AbstractProxyEngine implements ProxyEngineInterface, LoggerAwareInterface
+abstract class AbstractProxyAdapter implements ProxyAdapterInterface, LoggerAwareInterface
 {
     /**
      * @var LoggerInterface

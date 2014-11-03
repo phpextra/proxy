@@ -5,7 +5,7 @@
  * See the file LICENSE.txt for copying permission.
  */
 
-namespace PHPExtra\Proxy\Engine;
+namespace PHPExtra\Proxy\Adapter;
 
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\ResponseInterface;
@@ -15,7 +15,7 @@ use PHPExtra\Proxy\Http\ResponseInterface;
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-interface ProxyEngineInterface
+interface ProxyAdapterInterface
 {
     /**
      * Handle client request

@@ -5,9 +5,9 @@
  * See the file LICENSE.txt for copying permission.
  */
 
-namespace PHPExtra\Proxy\Engine\Dummy;
+namespace PHPExtra\Proxy\Adapter\Dummy;
 
-use PHPExtra\Proxy\Engine\ProxyEngineInterface;
+use PHPExtra\Proxy\Adapter\ProxyAdapterInterface;
 use Psr\Log\LoggerInterface;
 use PHPExtra\Proxy\Http\RequestInterface;
 
@@ -16,7 +16,7 @@ use PHPExtra\Proxy\Http\RequestInterface;
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class DummyEngine implements ProxyEngineInterface
+class DummyAdapter implements ProxyAdapterInterface
 {
     /**
      * @var \Closure

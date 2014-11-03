@@ -13,20 +13,13 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 /**
  * The AbstractHttpMessage class
  *
+ * @property ParameterBag $cookies
+ * @property HeaderBag $headers
+ *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
 trait HttpMessageTrait
 {
-    /**
-     * @var ParameterBag
-     */
-    public $cookies;
-
-    /**
-     * @var HeaderBag
-     */
-    public $headers;
-
     /**
      * {@inheritdoc}
      */

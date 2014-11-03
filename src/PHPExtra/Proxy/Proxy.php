@@ -7,15 +7,15 @@ use PHPExtra\EventManager\EventManagerAwareInterface;
 use PHPExtra\EventManager\EventManagerInterface;
 use PHPExtra\Proxy\Cache\CacheManagerInterface;
 use PHPExtra\Proxy\Cache\DefaultCacheManager;
-use PHPExtra\Proxy\Engine\ProxyEngineInterface;
-use PHPExtra\Proxy\Event\ProxyEngineEvent;
+use PHPExtra\Proxy\Adapter\ProxyAdapterInterface;
+use PHPExtra\Proxy\Event\ProxyAdapterEvent;
 use PHPExtra\Proxy\Event\ProxyEventInterface;
 use PHPExtra\Proxy\Event\ProxyExceptionEvent;
 use PHPExtra\Proxy\Event\ProxyRequestEvent;
 use PHPExtra\Proxy\Event\ProxyResponseEvent;
 use PHPExtra\Proxy\EventListener\DefaultProxyListener;
 use PHPExtra\Proxy\EventListener\ProxyCacheListener;
-use PHPExtra\Proxy\EventListener\ProxyEngineListener;
+use PHPExtra\Proxy\EventListener\ProxyAdapterListener;
 use PHPExtra\Proxy\EventListener\ProxyListenerInterface;
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Storage\FilesystemCacheStorage;
@@ -35,9 +35,9 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     const VERSION = '1.0.0';
 
     /**
-     * @var ProxyEngineInterface
+     * @var ProxyAdapterInterface
      */
-    private $engine;
+    private $adapter;
 
     /**
      * @var EventManagerInterface
@@ -65,21 +65,21 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     private $isInitialized = false;
 
     /**
-     * @return ProxyEngineInterface
+     * @return ProxyAdapterInterface
      */
-    public function getEngine()
+    public function getAdapter()
     {
-        return $this->engine;
+        return $this->adapter;
     }
 
     /**
-     * @param ProxyEngineInterface $engine
+     * @param ProxyAdapterInterface $adapter
      *
      * @return $this
      */
-    public function setEngine(ProxyEngineInterface $engine)
+    public function setAdapter(ProxyAdapterInterface $adapter)
     {
-        $this->engine = $engine;
+        $this->adapter = $adapter;
 
         return $this;
     }
@@ -132,7 +132,7 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
             }
 
             $this->eventManager
-                ->addListener(new ProxyEngineListener($this->engine))
+                ->addListener(new ProxyAdapterListener($this->adapter))
                 ->addListener(new DefaultProxyListener())
                 ->addListener(new ProxyCacheListener($this->cacheManager))
             ;
@@ -154,8 +154,8 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
 
 //        try {
             $response = $this->callProxyEvent(new ProxyRequestEvent($request))->getResponse();
-            // if response is present, all engines should skip it passing given response
-            $response = $this->callProxyEvent(new ProxyEngineEvent($request, $response))->getResponse();
+            // if response is present, all adapters should skip it passing given response
+            $response = $this->callProxyEvent(new ProxyAdapterEvent($request, $response))->getResponse();
             // response is now ready - if present, for post processing
             $response = $this->callProxyEvent(new ProxyResponseEvent($request, $response))->getResponse();
 //        } catch (\Exception $e) {

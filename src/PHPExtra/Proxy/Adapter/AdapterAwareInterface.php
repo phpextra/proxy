@@ -5,21 +5,21 @@
  * See the file LICENSE.txt for copying permission.
  */
 
-namespace PHPExtra\Proxy\Engine;
+namespace PHPExtra\Proxy\Adapter;
 
 /**
  * Process given request and return appropriate response
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-interface EngineAwareInterface
+interface AdapterAwareInterface
 {
     /**
-     * Set proxy engine
+     * Set proxy adapter
      *
-     * @param ProxyEngineInterface $engine
+     * @param ProxyAdapterInterface $adapter
      *
      * @return $this
      */
-    public function setEngine(ProxyEngineInterface $engine);
+    public function setAdapter(ProxyAdapterInterface $adapter);
 } 

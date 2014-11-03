@@ -2,8 +2,8 @@
 
 namespace PHPExtra\Proxy\Provider\Silex;
 
-use PHPExtra\Proxy\Engine\Dummy\DummyEngine;
-use PHPExtra\Proxy\Engine\Guzzle4\Guzzle4Engine;
+use PHPExtra\Proxy\Adapter\Dummy\DummyAdapter;
+use PHPExtra\Proxy\Adapter\Guzzle4\Guzzle4Adapter;
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Proxy;
 use PHPExtra\Proxy\Storage\FilesystemCacheStorage;
@@ -31,7 +31,7 @@ class ProxyServiceProvider implements ServiceProviderInterface, ControllerProvid
         $app['proxy.controller.prefix'] = '';
         $app['guzzle.base_url'] = '';
         $app['proxy.logger.name'] = 'Proxy';
-        $app['proxy.engine.name'] = 'guzzle4';
+        $app['proxy.adapter.name'] = 'guzzle4';
 
         $app['proxy'] = $app->share(
             function (Application $app) {
@@ -39,7 +39,7 @@ class ProxyServiceProvider implements ServiceProviderInterface, ControllerProvid
                 $proxy = new Proxy();
                 $proxy
                     ->setLogger($app['proxy.logger'])
-                    ->setEngine($app['proxy.engine'])
+                    ->setAdapter($app['proxy.adapter'])
                     ->setEventManager($app['event_manager'])
                 ;
 
@@ -73,20 +73,20 @@ class ProxyServiceProvider implements ServiceProviderInterface, ControllerProvid
             return new StreamHandler($app['proxy.logger.logfile'], $app['proxy.logger.level']);
         });
 
-        $app['proxy.engine.dummy'] = $app->share(
+        $app['proxy.adapter.dummy'] = $app->share(
             function (Application $app) {
-                return new DummyEngine($app['proxy.logger']);
+                return new DummyAdapter($app['proxy.logger']);
             }
         );
 
-        $app['proxy.engine.guzzle4'] = $app->share(
+        $app['proxy.adapter.guzzle4'] = $app->share(
             function (Application $app) {
-                return new Guzzle4Engine($app['guzzle.client']);
+                return new Guzzle4Adapter($app['guzzle.client']);
             }
         );
 
-        $app['proxy.engine'] = $app->share(function(Application $app){
-            return $app['proxy.engine.' . $app['proxy.engine.name']];
+        $app['proxy.adapter'] = $app->share(function(Application $app){
+            return $app['proxy.adapter.' . $app['proxy.adapter.name']];
         });
 
         $app['proxy.storage'] = $app->share(function(Application $app){

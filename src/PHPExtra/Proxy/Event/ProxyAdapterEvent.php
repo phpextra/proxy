@@ -7,6 +7,6 @@ namespace PHPExtra\Proxy\Event;
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class ProxyEngineEvent extends AbstractProxyEvent
+class ProxyAdapterEvent extends AbstractProxyEvent
 {
 }

@@ -5,21 +5,21 @@
  * See the file LICENSE.txt for copying permission.
  */
 
-namespace PHPExtra\Proxy\Engine\Guzzle4;
+namespace PHPExtra\Proxy\Adapter\Guzzle4;
 
 use GuzzleHttp\ClientInterface;
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\Response;
-use PHPExtra\Proxy\Engine\AbstractProxyEngine;
+use PHPExtra\Proxy\Adapter\AbstractProxyAdapter;
 use GuzzleHttp\Client;
 use GuzzleHttp\Message\Response as GuzzleResponse;
 
 /**
- * Guzzle4Engine proxy engine
+ * Guzzle4Adapter proxy adapter
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class Guzzle4Engine extends AbstractProxyEngine
+class Guzzle4Adapter extends AbstractProxyAdapter
 {
     /**
      * @var Client
