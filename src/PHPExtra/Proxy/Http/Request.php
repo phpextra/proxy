@@ -40,6 +40,16 @@ class Request extends \Symfony\Component\HttpFoundation\Request implements Reque
     }
 
     /**
+     * Creates a new request with values from PHP's super globals.
+     *
+     * @return RequestInterface
+     */
+    public static function createFromGlobals()
+    {
+        return parent::createFromGlobals();
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getFingerprint()

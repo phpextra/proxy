@@ -53,7 +53,6 @@ class Response extends \Symfony\Component\HttpFoundation\Response implements Res
         return parent::getDate();
     }
 
-
     /**
      * {@inheritdoc}
      */
@@ -68,5 +67,13 @@ class Response extends \Symfony\Component\HttpFoundation\Response implements Res
         }
 
         return $date;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function send()
+    {
+        return parent::send();
     }
 }

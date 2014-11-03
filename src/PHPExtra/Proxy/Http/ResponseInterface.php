@@ -109,4 +109,11 @@ interface ResponseInterface extends HttpMessageInterface
      */
     public function getExpireDate();
 
+    /**
+     * Send request to output buffer
+     *
+     * @return $this
+     */
+    public function send();
+
 }
