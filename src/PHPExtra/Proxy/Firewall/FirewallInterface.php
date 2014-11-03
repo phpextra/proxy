@@ -5,7 +5,7 @@
  * See the file LICENSE.txt for copying permission.
  */
 
-namespace PHPExtra\Proxy;
+namespace PHPExtra\Proxy\Firewall;
 
 use PHPExtra\Proxy\Http\RequestInterface;
 

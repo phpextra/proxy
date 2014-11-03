@@ -5,6 +5,8 @@
  * See the file LICENSE.txt for copying permission.
  */
 use PHPExtra\Proxy\Adapter\Dummy\DummyAdapter;
+use PHPExtra\Proxy\Firewall\DefaultFirewall;
+use PHPExtra\Proxy\Firewall\FirewallInterface;
 use PHPExtra\Proxy\ProxyInterface;
 use PHPExtra\Proxy\Storage\InMemoryStorage;
 
@@ -31,6 +33,11 @@ class ProxyTestCase extends PHPUnit_Framework_TestCase
      */
     protected $storage;
 
+    /**
+     * @var FirewallInterface
+     */
+    protected $firewall;
+
     protected function setUp()
     {
         $logger = new \Psr\Log\NullLogger();
@@ -41,6 +48,8 @@ class ProxyTestCase extends PHPUnit_Framework_TestCase
 
         $storage = new InMemoryStorage();
 
+        $firewall = new DefaultFirewall();
+
         $adapter  = new DummyAdapter();
         $adapter->setLogger($logger);
         $adapter->setHandler(function(\PHPExtra\Proxy\Http\RequestInterface $request){
@@ -49,10 +58,12 @@ class ProxyTestCase extends PHPUnit_Framework_TestCase
 
         $proxy = new \PHPExtra\Proxy\Proxy();
         $proxy->setLogger($logger);
+        $proxy->setFirewall($firewall);
         $proxy->setAdapter($adapter);
         $proxy->setEventManager($em);
         $proxy->setCacheManager(new \PHPExtra\Proxy\Cache\DefaultCacheManager($storage));
 
+        $this->firewall = $firewall;
         $this->storage = $storage;
         $this->adapter = $adapter;
         $this->proxy = $proxy;

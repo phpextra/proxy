@@ -15,7 +15,7 @@ use Doctrine\Common\Cache\FilesystemCache;
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class FilesystemCacheStorage extends DoctrineCacheStorage
+class FilesystemStorage extends DoctrineCacheStorage
 {
     /**
      * @param string $directory

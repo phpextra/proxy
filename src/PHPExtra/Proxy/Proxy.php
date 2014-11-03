@@ -3,8 +3,10 @@
 namespace PHPExtra\Proxy;
 
 use PHPExtra\EventManager\Event\CancellableEventInterface;
+use PHPExtra\EventManager\EventManager;
 use PHPExtra\EventManager\EventManagerAwareInterface;
 use PHPExtra\EventManager\EventManagerInterface;
+use PHPExtra\EventManager\Exception\RuntimeException;
 use PHPExtra\Proxy\Cache\CacheManagerInterface;
 use PHPExtra\Proxy\Cache\DefaultCacheManager;
 use PHPExtra\Proxy\Adapter\ProxyAdapterInterface;
@@ -17,8 +19,11 @@ use PHPExtra\Proxy\EventListener\DefaultProxyListener;
 use PHPExtra\Proxy\EventListener\ProxyCacheListener;
 use PHPExtra\Proxy\EventListener\ProxyAdapterListener;
 use PHPExtra\Proxy\EventListener\ProxyListenerInterface;
+use PHPExtra\Proxy\Exception\CancelledEventException;
+use PHPExtra\Proxy\Firewall\DefaultFirewall;
+use PHPExtra\Proxy\Firewall\FirewallInterface;
 use PHPExtra\Proxy\Http\RequestInterface;
-use PHPExtra\Proxy\Storage\FilesystemCacheStorage;
+use PHPExtra\Proxy\Storage\FilesystemStorage;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -30,9 +35,11 @@ use Psr\Log\NullLogger;
  */
 class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareInterface
 {
-    const NAME = 'PHPExtra\Proxy';
+    const NAME = 'phpextra/proxy';
 
     const VERSION = '1.0.0';
+
+    const URL = 'https://packagist.org/packages/phpextra/proxy';
 
     /**
      * @var ProxyAdapterInterface
@@ -50,6 +57,11 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     private $cacheManager;
 
     /**
+     * @var FirewallInterface
+     */
+    private $firewall;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -62,17 +74,24 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     /**
      * @var bool
      */
+    private $debug = false;
+
+    /**
+     * @var bool
+     */
     private $isInitialized = false;
 
     /**
-     * @return ProxyAdapterInterface
+     * @param bool $debug
      */
-    public function getAdapter()
+    function __construct($debug = false)
     {
-        return $this->adapter;
+        $this->debug = $debug;
     }
 
     /**
+     * Set adapter that will be used to proxy requests
+     *
      * @param ProxyAdapterInterface $adapter
      *
      * @return $this
@@ -95,6 +114,8 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     }
 
     /**
+     * Set cache manager that will be making decisions about what and when should be cached
+     *
      * @param CacheManagerInterface $cacheManager
      *
      * @return $this
@@ -102,6 +123,18 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     public function setCacheManager($cacheManager)
     {
         $this->cacheManager = $cacheManager;
+
+        return $this;
+    }
+
+    /**
+     * @param FirewallInterface $firewall
+     *
+     * @return $this
+     */
+    public function setFirewall(FirewallInterface $firewall)
+    {
+        $this->firewall = $firewall;
 
         return $this;
     }
@@ -127,13 +160,22 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
                 $this->logger = new NullLogger();
             }
 
+            if (!$this->firewall) {
+                $this->firewall = new DefaultFirewall();
+            }
+
             if(!$this->cacheManager){
-                $this->cacheManager = new DefaultCacheManager(new FilesystemCacheStorage());
+                $this->cacheManager = new DefaultCacheManager(new FilesystemStorage());
+            }
+
+            if(!$this->eventManager){
+                $this->eventManager = new EventManager();
             }
 
             $this->eventManager
+                ->setLogger($this->logger)
                 ->addListener(new ProxyAdapterListener($this->adapter))
-                ->addListener(new DefaultProxyListener())
+                ->addListener(new DefaultProxyListener($this->firewall))
                 ->addListener(new ProxyCacheListener($this->cacheManager))
             ;
 
@@ -152,15 +194,24 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     {
         $this->init();
 
-//        try {
+        try {
             $response = $this->callProxyEvent(new ProxyRequestEvent($request))->getResponse();
             // if response is present, all adapters should skip it passing given response
             $response = $this->callProxyEvent(new ProxyAdapterEvent($request, $response))->getResponse();
             // response is now ready - if present, for post processing
             $response = $this->callProxyEvent(new ProxyResponseEvent($request, $response))->getResponse();
-//        } catch (\Exception $e) {
-//            $response = $this->callProxyEvent(new ProxyExceptionEvent($e, $request))->getResponse();
-//        }
+        } catch (\Exception $e) {
+            if($this->debug === true){
+                throw $e;
+            }else{
+                $response = $this->callProxyEvent(new ProxyExceptionEvent($e, $request))->getResponse();
+
+                if($response === null){
+                    throw new RuntimeException('Proxy failed due to an exception; it was also unable to generate error response', 1, $e);
+                }
+
+            }
+        }
 
         return $response;
     }
@@ -182,7 +233,7 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
         $this->eventManager->trigger($event);
 
         if ($event instanceof CancellableEventInterface && $event->isCancelled()) {
-            throw $this->createProxyException('Proxy cancelled your request');
+            throw new CancelledEventException($event);
         }
 
         if ($event instanceof ProxyResponseEvent && !$event->hasResponse()) {

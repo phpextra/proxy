@@ -99,5 +99,17 @@ class ProxyTest extends ProxyTestCase
         $this->assertEquals('Cached response', $response->getBody());
     }
 
+    public function testProxyReturns403ResponseIfRequestedDomainWasNotAllowedByFirewall()
+    {
+        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/index.html');
+
+        $this->firewall->allowDomain('google.com'); // allow anything else
+
+        $response = $this->proxy->handle($request);
+
+        $this->assertEquals('Proxy cancelled your request', $response->getBody());
+        $this->assertEquals(403, $response->getStatusCode());
+    }
+
 }
  

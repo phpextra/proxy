@@ -10,6 +10,8 @@ namespace PHPExtra\Proxy\EventListener;
 use PHPExtra\Proxy\Event\ProxyExceptionEvent;
 use PHPExtra\Proxy\Event\ProxyRequestEvent;
 use PHPExtra\Proxy\Event\ProxyResponseEvent;
+use PHPExtra\Proxy\Exception\CancelledEventException;
+use PHPExtra\Proxy\Firewall\FirewallInterface;
 use PHPExtra\Proxy\Http\Response;
 use PHPExtra\Proxy\Proxy;
 use Psr\Log\LogLevel;
@@ -22,7 +24,20 @@ use Psr\Log\LogLevel;
 class DefaultProxyListener implements ProxyListenerInterface
 {
     /**
-     * Mark incoming requests
+     * @var FirewallInterface
+     */
+    private $firewall;
+
+    /**
+     * @param FirewallInterface $firewall
+     */
+    function __construct(FirewallInterface $firewall)
+    {
+        $this->firewall = $firewall;
+    }
+
+    /**
+     * Filter and mark incoming requests
      *
      * @priority highest
      *
@@ -33,16 +48,21 @@ class DefaultProxyListener implements ProxyListenerInterface
         if (!$event->isCancelled()) {
 
             $request = $event->getRequest();
-            $event->getLogger()->debug(sprintf('%s', $event->getRequest()->getRequestUri()));
+            $event->getLogger()->debug(sprintf('%s', $request->getRequestUri()));
 
-            if ($request->hasHeader('X-Proxy-Marker')) {
-                $response = new Response('Proxy server made a call to itself that cannot be handled', 403);
-                $event->setResponse($response);
-            } else {
-                $event->getLogger()->debug(sprintf('Added %s header to request object', 'X-Proxy-Marker'));
-                $request->addHeader('X-Proxy-Marker', '1');
+            if(!$this->firewall->isAllowed($request)){
+                $event->setIsCancelled();
+                $event->getLogger()->debug(sprintf('Request was cancelled as it was not allowed by a firewall'));
+            }else{
+
+                if ($request->hasHeader('X-Proxy-Marker')) {
+                    $event->setIsCancelled();
+                    $event->getLogger()->debug(sprintf('Proxy server made a call to itself that cannot be handled'));
+                } else {
+                    $event->getLogger()->debug(sprintf('Added %s header to request object', 'X-Proxy-Marker'));
+                    $request->addHeader('X-Proxy-Marker', '1');
+                }
             }
-
         }
     }
 
@@ -62,6 +82,7 @@ class DefaultProxyListener implements ProxyListenerInterface
             $response->addHeader('X-Powered-By', $xPoweredBy);
             $response->addHeader('X-Served-By', $xPoweredBy);
             $response->addHeader('X-Proxy-Version', Proxy::VERSION);
+            $response->addHeader('X-Proxy-Url', Proxy::URL);
         }
     }
 
@@ -75,14 +96,23 @@ class DefaultProxyListener implements ProxyListenerInterface
     public function onProxyException(ProxyExceptionEvent $event)
     {
         if (!$event->isCancelled() && !$event->hasResponse()) {
-            $event->getLogger()->warning('Exception was not handled, will return default error response');
-            $response = new Response('Proxy was unable to complete your request due to an error', 500);
+
+            if($event->getException() instanceof CancelledEventException){
+
+                $response = new Response('Proxy cancelled your request', 403);
+                $event->getLogger()->info('Proxy cancelled the request');
+
+            }else{
+                $response = new Response('Proxy was unable to complete your request due to an error', 500);
+                $event->getLogger()->warning(sprintf('Proxy caught an exception: %s', get_class($event->getException())));
+            }
+
             $event->setResponse($response);
         }
     }
 
     /**
-     * Monitor outcome of a request
+     * Monitor outcome of an event
      *
      * @priority monitor
      *
@@ -98,7 +128,7 @@ class DefaultProxyListener implements ProxyListenerInterface
             );
 
             if ($event->getResponse()->getStatusCode() != 200) {
-                $level = LogLevel::ERROR;
+                $level = LogLevel::WARNING;
                 $params[4] = '';
             } else {
                 $level = LogLevel::INFO;
