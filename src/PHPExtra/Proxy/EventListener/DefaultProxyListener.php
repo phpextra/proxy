@@ -57,7 +57,7 @@ class DefaultProxyListener implements ProxyListenerInterface
 
                 if ($request->hasHeader('X-Proxy-Marker')) {
                     $event->setIsCancelled();
-                    $event->getLogger()->debug(sprintf('Proxy server made a call to itself that cannot be handled'));
+                    $event->getLogger()->debug(sprintf('Proxy server made a call to itself that cannot be handled, request will be cancelled'));
                 } else {
                     $event->getLogger()->debug(sprintf('Added %s header to request object', 'X-Proxy-Marker'));
                     $request->addHeader('X-Proxy-Marker', '1');
@@ -99,12 +99,13 @@ class DefaultProxyListener implements ProxyListenerInterface
 
             if($event->getException() instanceof CancelledEventException){
 
-                $response = new Response('Proxy cancelled your request', 403);
-                $event->getLogger()->info('Proxy cancelled the request');
+                $message = 'Proxy cancelled your request';
+                $response = new Response($message, 403);
+                $event->getLogger()->info($message);
 
             }else{
                 $response = new Response('Proxy was unable to complete your request due to an error', 500);
-                $event->getLogger()->warning(sprintf('Proxy caught an exception: %s', get_class($event->getException())));
+                $event->getLogger()->error(sprintf('Proxy caught an exception: %s', get_class($event->getException())));
             }
 
             $event->setResponse($response);

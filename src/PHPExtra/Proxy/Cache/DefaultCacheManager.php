@@ -55,8 +55,6 @@ class DefaultCacheManager implements CacheManagerInterface
 
             $response = $this->storage->fetch($request);
 
-
-
             if($response === null){
                 $this->storage->delete($request);
             }elseif($this->isResponseFreshEnoughForTheClient($request, $response)){

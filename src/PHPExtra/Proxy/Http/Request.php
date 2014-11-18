@@ -75,6 +75,14 @@ class Request extends \Symfony\Component\HttpFoundation\Request implements Reque
     }
 
     /**
+     * @return string
+     */
+    public function getClientIp()
+    {
+        return parent::getClientIp();
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getMaxAge()

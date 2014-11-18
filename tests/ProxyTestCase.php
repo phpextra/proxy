@@ -4,9 +4,10 @@
  * Copyright (c) 2014 Jacek Kobus <kobus.jacek@gmail.com>
  * See the file LICENSE.txt for copying permission.
  */
+
 use PHPExtra\Proxy\Adapter\Dummy\DummyAdapter;
-use PHPExtra\Proxy\Firewall\DefaultFirewall;
 use PHPExtra\Proxy\Firewall\FirewallInterface;
+use PHPExtra\Proxy\Logger\LoggerProxy;
 use PHPExtra\Proxy\ProxyInterface;
 use PHPExtra\Proxy\Storage\InMemoryStorage;
 
@@ -38,34 +39,40 @@ class ProxyTestCase extends PHPUnit_Framework_TestCase
      */
     protected $firewall;
 
+    /**
+     * @var \Monolog\Handler\TestHandler
+     */
+    protected $logHandler;
+
     protected function setUp()
     {
-        $logger = new \Psr\Log\NullLogger();
+        $this->logHandler = new \Monolog\Handler\TestHandler();
+        $monolog = new Monolog\Logger('test', array($this->logHandler));
 
-        $em = new \PHPExtra\EventManager\EventManager();
-        $em->setThrowExceptions(true);
-        $em->setLogger($logger);
-
+        $logger = new LoggerProxy($monolog);
         $storage = new InMemoryStorage();
-
-        $firewall = new DefaultFirewall();
 
         $adapter  = new DummyAdapter();
         $adapter->setLogger($logger);
         $adapter->setHandler(function(\PHPExtra\Proxy\Http\RequestInterface $request){
-                return new \PHPExtra\Proxy\Http\Response('OK');
-            });
+            return new \PHPExtra\Proxy\Http\Response('OK');
+        });
 
-        $proxy = new \PHPExtra\Proxy\Proxy();
-        $proxy->setLogger($logger);
-        $proxy->setFirewall($firewall);
-        $proxy->setAdapter($adapter);
-        $proxy->setEventManager($em);
-        $proxy->setCacheManager(new \PHPExtra\Proxy\Cache\DefaultCacheManager($storage));
+        $factory = \PHPExtra\Proxy\ProxyFactory::getInstance();
+        $factory
+            ->setLogger($logger)
+            ->setStorage($storage)
+            ->setAdapter($adapter)
+        ;
 
-        $this->firewall = $firewall;
-        $this->storage = $storage;
-        $this->adapter = $adapter;
+        $factory->getEventManager()->setThrowExceptions(true);
+
+        $proxy = $factory->create();
+        $proxy->setDebug(false);
+
+        $this->firewall = $factory->getFirewall();
+        $this->storage = $factory->getStorage();
+        $this->adapter = $factory->getAdapter();
         $this->proxy = $proxy;
     }
 } 

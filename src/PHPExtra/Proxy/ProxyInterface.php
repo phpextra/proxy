@@ -7,6 +7,8 @@
 
 namespace PHPExtra\Proxy;
 
+use PHPExtra\Proxy\Adapter\ProxyAdapterAwareInterface;
+use PHPExtra\Proxy\Adapter\ProxyAdapterInterface;
 use PHPExtra\Proxy\EventListener\ProxyListenerInterface;
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\ResponseInterface;
@@ -16,7 +18,7 @@ use PHPExtra\Proxy\Http\ResponseInterface;
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-interface ProxyInterface
+interface ProxyInterface extends ProxyAdapterAwareInterface
 {
     /**
      * @param RequestInterface $request

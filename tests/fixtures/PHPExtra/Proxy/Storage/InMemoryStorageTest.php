@@ -13,7 +13,7 @@ class InMemoryStorageTest extends PHPUnit_Framework_TestCase {
         return new \PHPExtra\Proxy\Storage\InMemoryStorage();
     }
 
-    public function testReadResponseFromStorageReturnsValidResponse()
+    public function testResponseCanBeWrittenAndReadFromStorage()
     {
         $request = \PHPExtra\Proxy\Http\Request::create('test.html');
         $response = new \PHPExtra\Proxy\Http\Response('Works');

@@ -102,14 +102,23 @@ class ProxyTest extends ProxyTestCase
     public function testProxyReturns403ResponseIfRequestedDomainWasNotAllowedByFirewall()
     {
         $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/index.html');
-
         $this->firewall->allowDomain('google.com'); // allow anything else
-
         $response = $this->proxy->handle($request);
 
         $this->assertEquals('Proxy cancelled your request', $response->getBody());
         $this->assertEquals(403, $response->getStatusCode());
     }
+
+    public function testProxyReturns403ResponseIfClientIpWasNotAllowedByFirewall()
+    {
+        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/index.html');
+        $this->firewall->allowIp('88.88.88.88');
+        $response = $this->proxy->handle($request);
+
+        $this->assertEquals('Proxy cancelled your request', $response->getBody());
+        $this->assertEquals(403, $response->getStatusCode());
+    }
+
 
 }
  

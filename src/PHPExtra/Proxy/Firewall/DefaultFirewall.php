@@ -8,13 +8,15 @@
 namespace PHPExtra\Proxy\Firewall;
 
 use PHPExtra\Proxy\Http\RequestInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * The DefaultFirewall class
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class DefaultFirewall implements FirewallInterface
+class DefaultFirewall implements FirewallInterface, LoggerAwareInterface
 {
     /**
      * @var array
@@ -75,5 +77,17 @@ class DefaultFirewall implements FirewallInterface
      */
     private function normalize($string){
         return strtolower($string);
+    }
+
+    /**
+     * Sets a logger instance on the object
+     *
+     * @param LoggerInterface $logger
+     *
+     * @return null
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        // TODO: Implement setLogger() method.
     }
 }

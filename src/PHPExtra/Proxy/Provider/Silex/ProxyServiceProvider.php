@@ -4,17 +4,22 @@ namespace PHPExtra\Proxy\Provider\Silex;
 
 use PHPExtra\Proxy\Adapter\Dummy\DummyAdapter;
 use PHPExtra\Proxy\Adapter\Guzzle4\Guzzle4Adapter;
+use PHPExtra\Proxy\Cache\DefaultCacheManager;
+use PHPExtra\Proxy\EventListener\DefaultProxyListener;
+use PHPExtra\Proxy\EventListener\ProxyCacheListener;
+use PHPExtra\Proxy\Firewall\DefaultFirewall;
 use PHPExtra\Proxy\Http\RequestInterface;
-use PHPExtra\Proxy\Proxy;
-use PHPExtra\Proxy\Storage\FilesystemCacheStorage;
+use PHPExtra\Proxy\Http\Response;
+use PHPExtra\Proxy\Logger\LoggerProxy;
 use GuzzleHttp\Client;
-use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
-use Monolog\Processor\ProcessIdProcessor;
+use PHPExtra\Proxy\ProxyFactory;
+use PHPExtra\Proxy\Storage\FilesystemStorage;
 use Silex\Application;
 use Silex\ControllerCollection;
 use Silex\ControllerProviderInterface;
 use Silex\ServiceProviderInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Connect proxy to a silex application
@@ -28,20 +33,43 @@ class ProxyServiceProvider implements ServiceProviderInterface, ControllerProvid
      */
     public function register(Application $app)
     {
-        $app['proxy.controller.prefix'] = '';
+        /**
+         * Available options
+         */
+
+        $app['proxy.debug'] = $app['debug'];
+
         $app['guzzle.base_url'] = '';
+        $app['guzzle.timeout'] = 30;
+        $app['guzzle.connect_timeout'] = 10;
+        $app['guzzle.allow_redirects'] = false;
+        $app['guzzle.exceptions'] = false;
+        $app['guzzle.verify'] = false;
+        $app['guzzle.debug'] = false;
+        $app['guzzle.decode_content'] = true;
+
+        $app['proxy.controller.prefix'] = '';
         $app['proxy.logger.name'] = 'Proxy';
+        $app['proxy.logger.level'] = Logger::INFO;
         $app['proxy.adapter.name'] = 'guzzle4';
+        $app['proxy.storage.filesystem.directory'] = sys_get_temp_dir();
+
+        /**
+         * Services
+         */
 
         $app['proxy'] = $app->share(
             function (Application $app) {
 
-                $proxy = new Proxy();
-                $proxy
+                $proxy = ProxyFactory::getInstance()
                     ->setLogger($app['proxy.logger'])
                     ->setAdapter($app['proxy.adapter'])
                     ->setEventManager($app['event_manager'])
+                    ->setFirewall($app['proxy.firewall'])
+                    ->create()
                 ;
+
+                $proxy->setDebug($app['proxy.debug']);
 
                 foreach($app['proxy.listeners'] as $listener){
                     $app['event_manager']->addListener($listener);
@@ -51,33 +79,47 @@ class ProxyServiceProvider implements ServiceProviderInterface, ControllerProvid
             }
         );
 
+//        $app['proxy.logger.monolog'] = $app->share(function() use ($app){
+//            $logger = new Logger($app['proxy.logger.name']);
+//            $logger->pushHandler($app['proxy.logger.handler']);
+//            $logger->pushHandler($app['monolog.handler']);
+//
+//            $logger->pushProcessor(new ProcessIdProcessor());
+//
+//            $logger->pushProcessor(function(array $record) use ($app){
+//                    $request = $app['request'];
+//                    /** @var RequestInterface $request */
+//
+//                    $record['extra']['client_ip'] = $request ? $request->getClientIp() : null;
+//                    return $record;
+//                });
+//
+//            return $logger;
+//        });
+
         $app['proxy.logger'] = $app->share(function(Application $app){
-            $logger = new Logger($app['proxy.logger.name']);
-            $logger->pushHandler($app['monolog.handler']);
-            $logger->pushHandler($app['proxy.logger.handler']);
-
-            $logger->pushProcessor(new ProcessIdProcessor());
-
-            $logger->pushProcessor(function(array $record) use ($app){
-                $request = $app['request'];
-                /** @var RequestInterface $request */
-
-                $record['extra']['client_ip'] = $request ? $request->getClientIp() : null;
-                return $record;
-            });
-
-            return $logger;
+            return new LoggerProxy($app['logger']);
         });
 
-        $app['proxy.logger.handler'] = $app->share(function(Application $app){
-            return new StreamHandler($app['proxy.logger.logfile'], $app['proxy.logger.level']);
+        $app['proxy.firewall'] = $app->share(function() use ($app){
+            return new DefaultFirewall();
         });
+
+//        $app['proxy.logger.handler'] = $app->share(function(Application $app){
+//            return new StreamHandler($app['proxy.logger.logfile'], $app['proxy.logger.level']);
+//        });
 
         $app['proxy.adapter.dummy'] = $app->share(
             function (Application $app) {
-                return new DummyAdapter($app['proxy.logger']);
+                $adapter = new DummyAdapter($app['proxy.logger']);
+                $adapter->setHandler($app['proxy.adapter.dummy.handler']);
+                return $adapter;
             }
         );
+
+        $app['proxy.adapter.dummy.handler'] = $app->protect(function(){
+            return new Response('Proxy works !', 200);
+        });
 
         $app['proxy.adapter.guzzle4'] = $app->share(
             function (Application $app) {
@@ -90,35 +132,35 @@ class ProxyServiceProvider implements ServiceProviderInterface, ControllerProvid
         });
 
         $app['proxy.storage'] = $app->share(function(Application $app){
-            $stack = new FilesystemCacheStorage($app['proxy.storage.filesystem.directory']);
+            $stack = new FilesystemStorage($app['proxy.storage.filesystem.directory']);
             return $stack;
         });
 
-//        $app['proxy.listeners'] = $app->share(function(Application $app){
-//            return array(
-//                new ProxyResponseListener(),
-//                new ProxyCacheListener($app['proxy.storage'], $app['proxy.voter_stack']),
-//                new ProxyRequestListener(),
-//                new ProxyLoggerListener(),
-//            );
-//        });
-//
-//        $app['proxy.voter_stack'] = $app->share(function(Application $app){
-//            $stack = new VoterStack($app['proxy.logger']);
-//            foreach($app['proxy.voters'] as $voter){
-//                $stack->addVoter($voter);
-//            }
-//            return $stack;
-//        });
-//
-//        $app['proxy.voters'] = $app->share(function(){
-//            return array(
-//                new DefaultVoter()
-//            );
-//        });
+        $app['proxy.cache_manager'] = $app->share(function(Application $app){
+            $stack = new DefaultCacheManager($app['proxy.storage']);
+            return $stack;
+        });
 
-        $app['proxy.controller'] = $app->protect(function(Application $app){
-            return $app['proxy']->handle($app['request']);
+        $app['proxy.listeners'] = $app->share(function(Application $app){
+            return array(
+                new DefaultProxyListener($app['proxy.firewall']),
+                new ProxyCacheListener($app['proxy.cache_manager']),
+            );
+        });
+
+        $app['proxy.controller'] = $app->protect(function(Request $request, Application $app){
+
+            if(!$request instanceof RequestInterface){
+                $request = new \PHPExtra\Proxy\SymfonyBridge\Request($request);
+            }
+
+            $response = $app['proxy']->handle($request);
+
+            if(!$response instanceof \Symfony\Component\HttpFoundation\Response){
+                $response = new \PHPExtra\Proxy\SymfonyBridge\Response($response);
+            }
+
+            return $response;
         });
 
         $app['guzzle.client'] = $app->share(

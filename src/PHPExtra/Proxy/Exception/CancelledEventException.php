@@ -28,9 +28,8 @@ class CancelledEventException extends ProxyException
     function __construct(ProxyEventInterface $event, \Exception $previous = null)
     {
         $this->event = $event;
-        parent::__construct('Event was cancelled', 1, $previous);
+        parent::__construct(sprintf('Event (%s) was cancelled', get_class($event)), 1, $previous);
     }
-
 
     /**
      * @return ProxyEventInterface

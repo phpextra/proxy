@@ -17,8 +17,6 @@ use PHPExtra\EventManager\Event\EventInterface;
  */
 interface ProxyEventInterface extends EventInterface
 {
-//    public function getRequest();
-
     /**
      * @return ResponseInterface
      */

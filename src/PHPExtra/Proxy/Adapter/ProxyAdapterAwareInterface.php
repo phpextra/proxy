@@ -12,10 +12,10 @@ namespace PHPExtra\Proxy\Adapter;
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-interface AdapterAwareInterface
+interface ProxyAdapterAwareInterface
 {
     /**
-     * Set proxy adapter
+     * Set adapter that will be used to make http requests
      *
      * @param ProxyAdapterInterface $adapter
      *
