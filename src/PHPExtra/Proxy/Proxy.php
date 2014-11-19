@@ -33,18 +33,6 @@ use Psr\Log\NullLogger;
  */
 class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareInterface
 {
-    const NAME = 'phpextra/proxy';
-
-    const VERSION = '1.0.0';
-
-    const URL = 'https://packagist.org/packages/phpextra/proxy';
-
-    private $name;
-
-    private $version;
-
-    private $userAgent;
-
     /**
      * @var ProxyAdapterInterface
      */
@@ -81,9 +69,9 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     private $debug = false;
 
     /**
-     * @var bool
+     * @var ConfigInterface
      */
-    private $isInitialized = false;
+    private $config;
 
     /**
      * @param bool $debug
@@ -91,6 +79,7 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     function __construct($debug = false)
     {
         $this->debug = $debug;
+        $this->config = new Config();
     }
 
     /**
@@ -109,6 +98,30 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     public function setDebug($debug)
     {
         $this->debug = (bool)$debug;
+
+        return $this;
+    }
+
+    /**
+     * Get proxy configuration
+     *
+     * @return ConfigInterface
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
+    /**
+     * Set proxy configuration
+     *
+     * @param ConfigInterface $config
+     *
+     * @return $this
+     */
+    public function setConfig($config)
+    {
+        $this->config = $config;
 
         return $this;
     }
@@ -179,24 +192,22 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     public function handle(RequestInterface $request)
     {
         try {
-            $response = $this->callProxyEvent(new ProxyRequestEvent($request))->getResponse();
+            $response = $this->callProxyEvent(new ProxyRequestEvent($request, null, $this))->getResponse();
 
             if(!$response){
                 $response = $this->adapter->handle($request);
             }
 
             // response is now ready - if present, for post processing
-            $response = $this->callProxyEvent(new ProxyResponseEvent($request, $response))->getResponse();
+            $response = $this->callProxyEvent(new ProxyResponseEvent($request, $response, $this))->getResponse();
         } catch (\Exception $e) {
             if($this->debug === true){
                 throw $e;
             }else{
-                $response = $this->callProxyEvent(new ProxyExceptionEvent($e, $request))->getResponse();
-
+                $response = $this->callProxyEvent(new ProxyExceptionEvent($e, $request, null, $this))->getResponse();
                 if($response === null){
-                    throw $this->createProxyException('Proxy failed due to an exception; it was also unable to generate error response');
+                    throw $this->createProxyException('Proxy failed due to an exception; it was also unable to generate error response', $e);
                 }
-
             }
         }
 

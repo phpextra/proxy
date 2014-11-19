@@ -64,10 +64,14 @@ class Guzzle4Adapter extends AbstractProxyAdapter
         $headers['X-Forwarded-For'] = $request->getClientIp();
         $headers['X-Forwarded-Proto'] = $request->getScheme();
 
+        if(isset($headers['cookie'])){
+            unset($headers['cookie']);
+        }
+
         // see http://guzzle.readthedocs.org/en/latest/clients.html#request-options
         $guzzleRequest = $this->client->createRequest(
             $request->getMethod(),
-            $request->getRequestUri(),
+            $request->getUri(),
             array(
                 'headers'       => $headers,
                 'body'          => $request->getPostParams(),

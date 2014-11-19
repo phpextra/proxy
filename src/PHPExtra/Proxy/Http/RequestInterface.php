@@ -23,6 +23,11 @@ interface RequestInterface extends HttpMessageInterface
     public function getFingerprint();
 
     /**
+     * {@inheritdoc}
+     */
+    public function getUri();
+
+    /**
      * @return string
      */
     public function getRequestUri();

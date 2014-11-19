@@ -9,6 +9,7 @@ namespace PHPExtra\Proxy\Event;
 
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\ResponseInterface;
+use PHPExtra\Proxy\ProxyInterface;
 
 /**
  * Represents a proxy exception during request
@@ -26,11 +27,12 @@ class ProxyExceptionEvent extends AbstractProxyEvent
      * @param \Exception        $e
      * @param RequestInterface  $request
      * @param ResponseInterface $response
+     * @param ProxyInterface    $proxy
      */
-    function __construct(\Exception $e, RequestInterface $request, ResponseInterface $response = null)
+    function __construct(\Exception $e, RequestInterface $request, ResponseInterface $response = null, ProxyInterface $proxy)
     {
         $this->exception = $e;
-        parent::__construct($request, $response);
+        parent::__construct($request, $response, $proxy);
     }
 
     /**

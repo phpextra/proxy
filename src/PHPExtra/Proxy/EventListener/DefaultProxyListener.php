@@ -13,7 +13,6 @@ use PHPExtra\Proxy\Event\ProxyResponseEvent;
 use PHPExtra\Proxy\Exception\CancelledEventException;
 use PHPExtra\Proxy\Firewall\FirewallInterface;
 use PHPExtra\Proxy\Http\Response;
-use PHPExtra\Proxy\Proxy;
 use Psr\Log\LogLevel;
 
 /**
@@ -47,22 +46,33 @@ class DefaultProxyListener implements ProxyListenerInterface
     {
         if (!$event->isCancelled()) {
 
+            $response = null;
             $request = $event->getRequest();
             $event->getLogger()->debug(sprintf('%s', $request->getRequestUri()));
+            $config = $event->getProxy()->getConfig();
 
-            if(!$this->firewall->isAllowed($request)){
+            $proxyUniqueHeaderName = 'PROXY-ID';
+            $proxyUniqueHeaderValue = md5($config->getSecret() . $request->getFingerprint());
+
+            if (!$response && $request->hasHeaderWithValue($proxyUniqueHeaderName, $proxyUniqueHeaderValue)) {
+                $event->setIsCancelled();
+                $event->getLogger()->warning(sprintf('Proxy server made a call to itself that cannot be handled, request will be cancelled'));
+            } else {
+                $event->getLogger()->debug(sprintf('Added %s header to request object', $proxyUniqueHeaderName));
+                $request->addHeader($proxyUniqueHeaderName, $proxyUniqueHeaderValue);
+            }
+
+            if(!$response && !$this->firewall->isAllowed($request)){
                 $event->setIsCancelled();
                 $event->getLogger()->debug(sprintf('Request was cancelled as it was not allowed by a firewall'));
-            }else{
-
-                if ($request->hasHeader('X-Proxy-Marker')) {
-                    $event->setIsCancelled();
-                    $event->getLogger()->debug(sprintf('Proxy server made a call to itself that cannot be handled, request will be cancelled'));
-                } else {
-                    $event->getLogger()->debug(sprintf('Added %s header to request object', 'X-Proxy-Marker'));
-                    $request->addHeader('X-Proxy-Marker', '1');
-                }
             }
+
+            if(in_array($request->getHost(), $config->getHostsOnPort($request->getPort()))){
+                // display proxy welcome page as it is a direct hit
+                $response = new Response(sprintf('<html><h1>It works!</h1><body><p>Find out more about me on <a href="https://github.com/phpextra/proxy">GitHub</a>.</p></body></html>'), 200);
+            }
+
+            $event->setResponse($response);
         }
     }
 
@@ -75,14 +85,15 @@ class DefaultProxyListener implements ProxyListenerInterface
      */
     public function onProxyResponse(ProxyResponseEvent $event)
     {
-        if (!$event->isCancelled() && $event->hasResponse()) {
+        if ($event->hasResponse()) {
+
+            $fullProxyName = sprintf('%s v.%s', $event->getProxy()->getConfig()->getProxyName(), $event->getProxy()->getConfig()->getProxyVersion());
+
             $event->getLogger()->debug('Signing response with proxy name and version');
-            $xPoweredBy = sprintf('%s v.%s', Proxy::NAME, Proxy::VERSION);
             $response = $event->getResponse();
-            $response->addHeader('X-Powered-By', $xPoweredBy);
-            $response->addHeader('X-Served-By', $xPoweredBy);
-            $response->addHeader('X-Proxy-Version', Proxy::VERSION);
-            $response->addHeader('X-Proxy-Url', Proxy::URL);
+            $response->addHeader('X-Powered-By', $fullProxyName);
+            $response->addHeader('X-Served-By', $event->getProxy()->getConfig()->getProxyName());
+            $response->addHeader('X-Proxy-Version', $event->getProxy()->getConfig()->getProxyVersion());
         }
     }
 
@@ -97,15 +108,18 @@ class DefaultProxyListener implements ProxyListenerInterface
     {
         if (!$event->isCancelled() && !$event->hasResponse()) {
 
-            if($event->getException() instanceof CancelledEventException){
+            $exception = $event->getException();
 
-                $message = 'Proxy cancelled your request';
+            if($exception instanceof CancelledEventException){
+
+                $message = '<h1>Forbidden</h1><p>Proxy cancelled your request.</p>';
                 $response = new Response($message, 403);
-                $event->getLogger()->info($message);
 
             }else{
-                $response = new Response('Proxy was unable to complete your request due to an error', 500);
-                $event->getLogger()->error(sprintf('Proxy caught an exception: %s', get_class($event->getException())));
+                $response = new Response('Proxy was unable to complete your request due to an unknown error', 500);
+                $event->getLogger()->error(sprintf('Proxy caught an exception (%s): %s',
+                    get_class($event->getException()), $event->getException()->getMessage())
+                );
             }
 
             $event->setResponse($response);

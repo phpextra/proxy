@@ -9,6 +9,7 @@ namespace PHPExtra\Proxy\Event;
 
 use PHPExtra\Proxy\Http\ResponseInterface;
 use PHPExtra\EventManager\Event\EventInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * The ProxyEventInterface interface
@@ -26,4 +27,9 @@ interface ProxyEventInterface extends EventInterface
      * @return bool
      */
     public function hasResponse();
+
+    /**
+     * @return LoggerInterface
+     */
+    public function getLogger();
 }

@@ -13,9 +13,9 @@ class ProxyServiceProviderTest extends PHPUnit_Framework_TestCase
         $logger = new \Psr\Log\NullLogger();
 
         $silex = new Silex\Application(array(
-                'debug' => true,
-                'logger' => $logger
-            ));
+            'debug' => true,
+            'logger' => $logger
+        ));
 
         $silex->register(new \PHPExtra\Proxy\Provider\Silex\ProxyServiceProvider(), array(
             'logger' => $logger,
@@ -23,12 +23,13 @@ class ProxyServiceProviderTest extends PHPUnit_Framework_TestCase
             'proxy.adapter.dummy.handler' => $silex->protect(function(\PHPExtra\Proxy\Http\RequestInterface $request){
                 return new \PHPExtra\Proxy\Http\Response('I see ' . $request->getRequestUri());
             }),
+            'proxy.logger' => $logger,
         ));
 
         $silex->register(new \PHPExtra\EventManager\Silex\EventManagerServiceProvider());
         $silex->boot();
 
-        $request = \Symfony\Component\HttpFoundation\Request::create('/ping');
+        $request = \Symfony\Component\HttpFoundation\Request::create('http://test.com/ping');
 
         $response = $silex->handle($request);
         $silex->terminate($request, $response);

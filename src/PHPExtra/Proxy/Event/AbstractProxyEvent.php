@@ -5,6 +5,7 @@ namespace PHPExtra\Proxy\Event;
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\ResponseInterface;
 use PHPExtra\EventManager\Event\CancellableEvent;
+use PHPExtra\Proxy\ProxyInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
@@ -31,21 +32,28 @@ abstract class AbstractProxyEvent extends CancellableEvent implements ProxyEvent
     private $logger;
 
     /**
+     * @var ProxyInterface
+     */
+    private $proxy;
+
+    /**
      * @param RequestInterface  $request
      * @param ResponseInterface $response
+     * @param ProxyInterface    $proxy
      */
-    function __construct(RequestInterface $request, ResponseInterface $response = null)
+    function __construct(RequestInterface $request, ResponseInterface $response = null, ProxyInterface $proxy)
     {
+        $this->proxy = $proxy;
         $this->request = $request;
         $this->response = $response;
     }
 
     /**
-     * @return LoggerInterface
+     * @return ProxyInterface
      */
-    public function getLogger()
+    public function getProxy()
     {
-        return $this->logger;
+        return $this->proxy;
     }
 
     /**
@@ -56,6 +64,14 @@ abstract class AbstractProxyEvent extends CancellableEvent implements ProxyEvent
         $this->logger = $logger;
 
         return $this;
+    }
+
+    /**
+     * @return LoggerInterface
+     */
+    public function getLogger()
+    {
+        return $this->logger;
     }
 
     /**

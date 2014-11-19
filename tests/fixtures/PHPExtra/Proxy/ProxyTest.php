@@ -105,7 +105,7 @@ class ProxyTest extends ProxyTestCase
         $this->firewall->allowDomain('google.com'); // allow anything else
         $response = $this->proxy->handle($request);
 
-        $this->assertEquals('Proxy cancelled your request', $response->getBody());
+        $this->assertEquals('<h1>Forbidden</h1><p>Proxy cancelled your request.</p>', $response->getBody());
         $this->assertEquals(403, $response->getStatusCode());
     }
 
@@ -115,10 +115,8 @@ class ProxyTest extends ProxyTestCase
         $this->firewall->allowIp('88.88.88.88');
         $response = $this->proxy->handle($request);
 
-        $this->assertEquals('Proxy cancelled your request', $response->getBody());
+        $this->assertEquals('<h1>Forbidden</h1><p>Proxy cancelled your request.</p>', $response->getBody());
         $this->assertEquals(403, $response->getStatusCode());
     }
-
-
 }
  

@@ -29,6 +29,15 @@ class AbstractRequest extends Request implements RequestInterface
     {
         return $this->request->all();
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUri()
+    {
+        return parent::getUri();
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -51,6 +60,7 @@ class AbstractRequest extends Request implements RequestInterface
      */
     public function getCookies()
     {
+        return $this->cookies->all();
     }
 
     // request and response shared code
