@@ -160,7 +160,7 @@ class ProxyServiceProvider implements ServiceProviderInterface, ControllerProvid
 
         $app['proxy.adapter.dummy'] = $app->share(
             function (Application $app) {
-                $adapter = new DummyAdapter($app['proxy.logger']);
+                $adapter = new DummyAdapter();
                 $adapter->setHandler($app['proxy.adapter.dummy.handler']);
                 return $adapter;
             }

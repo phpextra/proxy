@@ -11,7 +11,6 @@ use GuzzleHttp\ClientInterface;
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\Response;
 use PHPExtra\Proxy\Adapter\AbstractProxyAdapter;
-use GuzzleHttp\Client;
 use GuzzleHttp\Message\Response as GuzzleResponse;
 
 /**
@@ -22,7 +21,7 @@ use GuzzleHttp\Message\Response as GuzzleResponse;
 class Guzzle4Adapter extends AbstractProxyAdapter
 {
     /**
-     * @var Client
+     * @var ClientInterface
      */
     private $client;
 

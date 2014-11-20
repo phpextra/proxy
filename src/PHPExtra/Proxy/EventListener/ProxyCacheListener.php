@@ -14,7 +14,6 @@ use PHPExtra\Proxy\Storage\StorageInterface;
 
 /**
  * Listen for incoming ProxyRequestEvent and decide whenever to store or read requests in and out from cache
- * This listener uses the VoterStackInterface
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
@@ -23,7 +22,7 @@ class ProxyCacheListener implements ProxyListenerInterface
     /**
      * @var CacheStrategyInterface
      */
-    private $cacheStrategyInterface;
+    private $cacheStrategy;
 
     /**
      * @param CacheStrategyInterface $cacheStrategy
@@ -47,12 +46,6 @@ class ProxyCacheListener implements ProxyListenerInterface
         if(!$event->isCancelled() && !$event->hasResponse()){
 
             $response = $this->storage->fetch($event->getRequest());
-
-            if($response === false){
-                var_dump($this->storage);
-                throw new \Exception('asdf');
-            }
-
             $request = $event->getRequest();
 
             if($this->cacheStrategy->canUseResponseFromCache($request, $response)){

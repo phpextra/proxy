@@ -3,14 +3,14 @@
 namespace PHPExtra\Proxy\SymfonyBridge;
 
 use PHPExtra\Proxy\Http\RequestInterface;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
 /**
  * The AbstractRequest class
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class AbstractRequest extends Request implements RequestInterface
+class AbstractRequest extends SymfonyRequest implements RequestInterface
 {
     /**
      * {@inheritdoc}
@@ -88,7 +88,11 @@ class AbstractRequest extends Request implements RequestInterface
      */
     public function getHeader($name, $default = null)
     {
-        return $this->headers->get($name, $default, false);
+        $header = $this->headers->get($name, $default, false);
+        if(is_string($header)){
+            $header = array($header);
+        }
+        return $header;
     }
 
     /**

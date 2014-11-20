@@ -3,14 +3,14 @@
 namespace PHPExtra\Proxy\SymfonyBridge;
 
 use PHPExtra\Proxy\Http\ResponseInterface;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * The AbstractResponse class
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class AbstractResponse extends Response implements ResponseInterface
+class AbstractResponse extends SymfonyResponse implements ResponseInterface
 {
     /**
      * {@inheritdoc}
@@ -90,7 +90,11 @@ class AbstractResponse extends Response implements ResponseInterface
      */
     public function getHeader($name, $default = null)
     {
-        return $this->headers->get($name, $default, false);
+        $header = $this->headers->get($name, $default, false);
+        if(is_string($header)){
+            $header = array($header);
+        }
+        return $header;
     }
 
     /**
