@@ -25,6 +25,11 @@ class ProxyCacheListener implements ProxyListenerInterface
     private $cacheStrategy;
 
     /**
+     * @var StorageInterface
+     */
+    private $storage;
+
+    /**
      * @param CacheStrategyInterface $cacheStrategy
      * @param StorageInterface       $storage
      */
