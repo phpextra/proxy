@@ -101,7 +101,7 @@ class ProxyTest extends ProxyTestCase
 
     public function testProxyReturns403ResponseIfRequestedDomainWasNotAllowedByFirewall()
     {
-        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/index.html');
+        $request = \PHPExtra\Proxy\Http\Request::create('http://google.cn/index.html');
         $this->firewall->allowDomain('google.com'); // allow anything else
         $response = $this->proxy->handle($request);
 
@@ -132,6 +132,19 @@ class ProxyTest extends ProxyTestCase
         $response = $this->proxy->handle($request);
         $this->assertEquals($this->getResource('home.html'), $response->getBody());
         $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function testProxyReturns403ResponseForSelfRequest()
+    {
+        $requestFingerprint = 'e30c1c145e50bf025415f4f2d42d9a40';
+
+        $request = \PHPExtra\Proxy\Http\Request::create('http://localhost/index.html');
+        $request->setHeader('PROXY-ID', $requestFingerprint);
+
+        $response = $this->proxy->handle($request);
+
+        $this->assertEquals($this->getResource('403.html'), $response->getBody());
+        $this->assertEquals(403, $response->getStatusCode());
     }
 }
  

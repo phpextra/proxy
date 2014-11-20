@@ -32,7 +32,10 @@ class InMemoryStorage implements StorageInterface
      */
     public function fetch(RequestInterface $request)
     {
-        return $this->storage->offsetGet($request);
+        if($this->has($request)){
+            return $this->storage->offsetGet($request);
+        }
+        return null;
     }
 
     /**
@@ -58,7 +61,9 @@ class InMemoryStorage implements StorageInterface
      */
     public function delete(RequestInterface $request)
     {
-        $this->storage->offsetUnset($request);
+        if($this->has($request)) {
+            $this->storage->offsetUnset($request);
+        }
 
         return $this;
     }

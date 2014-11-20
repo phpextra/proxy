@@ -7,9 +7,10 @@
 
 namespace PHPExtra\Proxy\EventListener;
 
-use PHPExtra\Proxy\Cache\CacheManagerInterface;
+use PHPExtra\Proxy\Cache\CacheStrategyInterface;
 use PHPExtra\Proxy\Event\ProxyRequestEvent;
 use PHPExtra\Proxy\Event\ProxyResponseEvent;
+use PHPExtra\Proxy\Storage\StorageInterface;
 
 /**
  * Listen for incoming ProxyRequestEvent and decide whenever to store or read requests in and out from cache
@@ -20,30 +21,44 @@ use PHPExtra\Proxy\Event\ProxyResponseEvent;
 class ProxyCacheListener implements ProxyListenerInterface
 {
     /**
-     * @var CacheManagerInterface
+     * @var CacheStrategyInterface
      */
-    private $cacheManager;
+    private $cacheStrategyInterface;
 
     /**
-     * @param CacheManagerInterface $cacheManager
+     * @param CacheStrategyInterface $cacheStrategy
+     * @param StorageInterface       $storage
      */
-    function __construct(CacheManagerInterface $cacheManager)
+    function __construct(CacheStrategyInterface $cacheStrategy, StorageInterface $storage)
     {
-        $this->cacheManager = $cacheManager;
+        $this->cacheStrategy = $cacheStrategy;
+        $this->storage = $storage;
     }
 
     /**
-     * @priority normal
      *
+     * @priority normal
      * @param ProxyRequestEvent $event
+     *
+     * @throws \Exception
      */
     public function onProxyRequest(ProxyRequestEvent $event)
     {
         if(!$event->isCancelled() && !$event->hasResponse()){
-            $response = $this->cacheManager->fetch($event->getRequest());
 
-            if($response){
+            $response = $this->storage->fetch($event->getRequest());
+
+            if($response === false){
+                var_dump($this->storage);
+                throw new \Exception('asdf');
+            }
+
+            $request = $event->getRequest();
+
+            if($this->cacheStrategy->canUseResponseFromCache($request, $response)){
                 $event->getLogger()->debug('Response was read from cache');
+                $response->addHeader('X-Cache', 'HIT');
+                $response->addHeader('X-Cache-Hits', 1);
                 $event->setResponse($response);
             }
         }
@@ -57,104 +72,19 @@ class ProxyCacheListener implements ProxyListenerInterface
     public function onProxyResponse(ProxyResponseEvent $event)
     {
         if(!$event->isCancelled() && $event->hasResponse()){
-            $event->getLogger()->debug('Response was sent to cache');
-            $this->cacheManager->save($event->getRequest(), $event->getResponse());
+
+            $response = $event->getResponse();
+            $request = $event->getRequest();
+
+            if($response->hasHeaderWithValue('X-Cache', 'HIT')){
+                $response->addHeader('X-Cache', 'MISS');
+                $response->addHeader('X-Cache-Hits', 0);
+            }
+
+            if($this->cacheStrategy->canStoreResponseInCache($response, $event->getRequest())){
+                $this->storage->save($request, $response);
+                $event->getLogger()->debug('Response was stored in cache');
+            }
         }
     }
-
-//    /**
-//     * @param StorageInterface    $storage
-//     * @param VoterStackInterface $voterStack
-//     */
-//    function __construct(StorageInterface $storage, VoterStackInterface $voterStack)
-//    {
-//        $this->storage = $storage;
-//        $this->voterStack = $voterStack;
-//    }
-//
-//    /**
-//     * Process request before it will go through proxy adapter
-//     *
-//     * @priority high
-//     *
-//     * @param ProxyRequestEvent $event
-//     */
-//    public function onProxyRequest(ProxyRequestEvent $event)
-//    {
-//        if (!$event->hasResponse() && !$event->isCancelled()) {
-//            $request = $event->getRequest();
-//            $response = $this->getStorage()->fetch($request);
-//
-//            if ($response) {
-//
-//                $canBeReadFromCache = $this->getVoterStack()->canUseResponseFromStorage($response, $request);
-//
-//                if (!$canBeReadFromCache) {
-//                    $event->getLogger()->debug('Unable to read response from cache (not allowed by strategy)');
-//                } else {
-//
-//                    $response = $this->getStorage()->fetch($request);
-//
-//                    $response->addHeader('X-Cache', 'HIT');
-//                    $response->addHeader('X-Cache-Hits', 1);
-//
-//                    $event->setResponse($response);
-//
-//                    $event->getLogger()->debug('Response was read from cache');
-//                }
-//
-//            } else {
-//                $event->getLogger()->debug('Unable to read response from cache (not found in storage)');
-//            }
-//
-//        }
-//    }
-//
-//    /**
-//     * Process response returned by proxy adapter
-//     *
-//     * @priority low
-//     *
-//     * @param ProxyResponseEvent $event
-//     */
-//    public function onProxyResponse(ProxyResponseEvent $event)
-//    {
-//        if ($event->hasResponse() && !$event->isCancelled()) {
-//            $request = $event->getRequest();
-//            $response = $event->getResponse();
-//
-//            // fix headers if there was NO cache hit
-//            if ($response->getHeader('X-Cache') != 'HIT') {
-//                $response->addHeader('X-Cache', 'MISS');
-//                $response->addHeader('X-Cache-Hits', 0);
-//            }
-//
-//            if ($response->getHeader('X-Cache') == 'HIT') {
-//                $event->getLogger()->debug('Response was NOT stored in cache (was from cache)');
-//            } elseif (!$response->isSuccessful()) {
-//                $event->getLogger()->debug('Response was NOT stored in cache (response was not successful)');
-//            } elseif ($this->getVoterStack()->canStoreResponseInStorage($response, $request)) {
-//                $this->getStorage()->save($response, $request);
-//                $event->getLogger()->debug('Response was stored in cache');
-//            } else {
-//                $event->getLogger()->debug('Response was NOT stored in cache (not allowed by strategy)');
-//            }
-//        }
-//    }
-//
-//    /**
-//     * @return VoterStackInterface
-//     */
-//    private function getVoterStack()
-//    {
-//        return $this->voterStack;
-//    }
-//
-//    /**
-//     * @return StorageInterface
-//     */
-//    private function getStorage()
-//    {
-//        return $this->storage;
-//    }
 }

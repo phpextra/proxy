@@ -3,28 +3,20 @@
 namespace PHPExtra\Proxy;
 
 use PHPExtra\EventManager\Event\CancellableEventInterface;
-use PHPExtra\EventManager\EventManager;
 use PHPExtra\EventManager\EventManagerAwareInterface;
 use PHPExtra\EventManager\EventManagerInterface;
-use PHPExtra\Proxy\Cache\CacheManagerInterface;
-use PHPExtra\Proxy\Cache\DefaultCacheManager;
+use PHPExtra\Proxy\Cache\CacheStrategyInterface;
 use PHPExtra\Proxy\Adapter\ProxyAdapterInterface;
 use PHPExtra\Proxy\Event\ProxyEventInterface;
 use PHPExtra\Proxy\Event\ProxyExceptionEvent;
 use PHPExtra\Proxy\Event\ProxyRequestEvent;
 use PHPExtra\Proxy\Event\ProxyResponseEvent;
-use PHPExtra\Proxy\EventListener\DefaultProxyListener;
-use PHPExtra\Proxy\EventListener\ProxyCacheListener;
 use PHPExtra\Proxy\EventListener\ProxyListenerInterface;
 use PHPExtra\Proxy\Exception\CancelledEventException;
-use PHPExtra\Proxy\Firewall\DefaultFirewall;
 use PHPExtra\Proxy\Firewall\FirewallInterface;
 use PHPExtra\Proxy\Http\RequestInterface;
-use PHPExtra\Proxy\Logger\LoggerProxy;
-use PHPExtra\Proxy\Storage\FilesystemStorage;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 
 /**
  * The proxy
@@ -44,9 +36,9 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     private $eventManager;
 
     /**
-     * @var CacheManagerInterface
+     * @var CacheStrategyInterface
      */
-    private $cacheManager;
+    private $cacheStrategy;
 
     /**
      * @var FirewallInterface
@@ -127,6 +119,18 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     }
 
     /**
+     * @param CacheStrategyInterface $cacheStrategy
+     *
+     * @return $this
+     */
+    public function setCacheStrategy($cacheStrategy)
+    {
+        $this->cacheStrategy = $cacheStrategy;
+
+        return $this;
+    }
+
+    /**
      * Set adapter that will be used to proxy requests
      *
      * @param ProxyAdapterInterface $adapter
@@ -146,20 +150,6 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     public function setEventManager(EventManagerInterface $eventManager)
     {
         $this->eventManager = $eventManager;
-
-        return $this;
-    }
-
-    /**
-     * Set cache manager that will be making decisions about what and when should be cached
-     *
-     * @param CacheManagerInterface $cacheManager
-     *
-     * @return $this
-     */
-    public function setCacheManager(CacheManagerInterface $cacheManager)
-    {
-        $this->cacheManager = $cacheManager;
 
         return $this;
     }
@@ -201,7 +191,7 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
             // response is now ready - if present, for post processing
             $response = $this->callProxyEvent(new ProxyResponseEvent($request, $response, $this))->getResponse();
         } catch (\Exception $e) {
-            if($this->debug === true){
+            if($this->debug == true){
                 throw $e;
             }else{
                 $response = $this->callProxyEvent(new ProxyExceptionEvent($e, $request, null, $this))->getResponse();

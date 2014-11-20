@@ -6,7 +6,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Processor\ProcessIdProcessor;
 use PHPExtra\Proxy\Adapter\Dummy\DummyAdapter;
 use PHPExtra\Proxy\Adapter\Guzzle4\Guzzle4Adapter;
-use PHPExtra\Proxy\Cache\DefaultCacheManager;
+use PHPExtra\Proxy\Cache\DefaultCacheStrategy;
 use PHPExtra\Proxy\Config;
 use PHPExtra\Proxy\EventListener\DefaultProxyListener;
 use PHPExtra\Proxy\EventListener\ProxyCacheListener;
@@ -181,15 +181,15 @@ class ProxyServiceProvider implements ServiceProviderInterface, ControllerProvid
             return $stack;
         });
 
-        $app['proxy.cache_manager'] = $app->share(function(Application $app){
-            $stack = new DefaultCacheManager($app['proxy.storage']);
+        $app['proxy.cache_strategy'] = $app->share(function(Application $app){
+            $stack = new DefaultCacheStrategy();
             return $stack;
         });
 
         $app['proxy.listeners'] = $app->share(function(Application $app){
             return array(
                 new DefaultProxyListener($app['proxy.firewall']),
-                new ProxyCacheListener($app['proxy.cache_manager']),
+                new ProxyCacheListener($app['proxy.cache_strategy'], $app['proxy.storage']),
             );
         });
 

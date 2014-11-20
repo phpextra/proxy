@@ -19,6 +19,7 @@ class ProxyServiceProviderTest extends PHPUnit_Framework_TestCase
 
         $silex->register(new \PHPExtra\Proxy\Provider\Silex\ProxyServiceProvider(), array(
             'logger' => $logger,
+            'proxy.storage' => new \PHPExtra\Proxy\Storage\InMemoryStorage(),
             'proxy.adapter.name' => 'dummy',
             'proxy.adapter.dummy.handler' => $silex->protect(function(\PHPExtra\Proxy\Http\RequestInterface $request){
                 return new \PHPExtra\Proxy\Http\Response('I see ' . $request->getRequestUri());

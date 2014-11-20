@@ -7,8 +7,8 @@ use PHPExtra\EventManager\EventManager;
 use PHPExtra\EventManager\EventManagerInterface;
 use PHPExtra\Proxy\Adapter\Guzzle4\Guzzle4Adapter;
 use PHPExtra\Proxy\Adapter\ProxyAdapterInterface;
-use PHPExtra\Proxy\Cache\CacheManagerInterface;
-use PHPExtra\Proxy\Cache\DefaultCacheManager;
+use PHPExtra\Proxy\Cache\CacheStrategyInterface;
+use PHPExtra\Proxy\Cache\DefaultCacheStrategy;
 use PHPExtra\Proxy\EventListener\DefaultProxyListener;
 use PHPExtra\Proxy\EventListener\ProxyCacheListener;
 use PHPExtra\Proxy\Firewall\DefaultFirewall;
@@ -42,9 +42,9 @@ class ProxyFactory implements ProxyFactoryInterface
     protected $eventManager;
 
     /**
-     * @var CacheManagerInterface
+     * @var CacheStrategyInterface
      */
-    protected $cacheManager;
+    protected $cacheStrategy;
 
     /**
      * @var StorageInterface
@@ -55,6 +55,11 @@ class ProxyFactory implements ProxyFactoryInterface
      * @var FirewallInterface
      */
     protected $firewall;
+
+    /**
+     * @var ConfigInterface
+     */
+    protected $config;
 
     /**
      * @return ProxyFactory
@@ -72,14 +77,38 @@ class ProxyFactory implements ProxyFactoryInterface
         $proxy = new Proxy();
 
         $proxy
+            ->setConfig($this->getConfig())
             ->setLogger($this->getLogger())
             ->setAdapter($this->getAdapter())
             ->setFirewall($this->getFirewall())
             ->setEventManager($this->getEventManager())
-            ->setCacheManager($this->getCacheManager())
+            ->setCacheStrategy($this->getCacheStrategy())
         ;
 
         return $proxy;
+    }
+
+    /**
+     * @param ConfigInterface $config
+     *
+     * @return $this
+     */
+    public function setConfig(ConfigInterface $config)
+    {
+        $this->config = $config;
+
+        return $this;
+    }
+
+    /**
+     * @return ConfigInterface
+     */
+    public function getConfig()
+    {
+        if(!$this->config){
+            $this->config = new Config();
+        }
+        return $this->config;
     }
 
     /**
@@ -108,24 +137,24 @@ class ProxyFactory implements ProxyFactoryInterface
     }
 
     /**
-     * @return CacheManagerInterface
+     * @return CacheStrategyInterface
      */
-    public function getCacheManager()
+    public function getCacheStrategy()
     {
-        if(!$this->cacheManager){
-            $this->cacheManager = new DefaultCacheManager($this->getStorage());
+        if(!$this->cacheStrategy){
+            $this->cacheStrategy = new DefaultCacheStrategy();
         }
-        return $this->cacheManager;
+        return $this->cacheStrategy;
     }
 
     /**
-     * @param CacheManagerInterface $cacheManager
+     * @param CacheStrategyInterface $cacheStrategy
      *
      * @return $this
      */
-    public function setCacheManager($cacheManager)
+    public function setCacheStrategy($cacheStrategy)
     {
-        $this->cacheManager = $cacheManager;
+        $this->cacheStrategy = $cacheStrategy;
 
         return $this;
     }
@@ -141,7 +170,7 @@ class ProxyFactory implements ProxyFactoryInterface
 
             $this->eventManager
                 ->addListener(new DefaultProxyListener($this->getFirewall()))
-                ->addListener(new ProxyCacheListener($this->getCacheManager()))
+                ->addListener(new ProxyCacheListener($this->getCacheStrategy(), $this->getStorage()))
             ;
         }
         return $this->eventManager;

@@ -36,7 +36,8 @@ class DoctrineCacheStorage implements StorageInterface
      */
     public function fetch(RequestInterface $request)
     {
-        return $this->doctrineCacheAdapter->fetch($request->getFingerprint());
+        $result = $this->doctrineCacheAdapter->fetch($request->getFingerprint());
+        return $result instanceof RequestInterface ? $result : null;
     }
 
     /**

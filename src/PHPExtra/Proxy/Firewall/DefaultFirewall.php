@@ -29,6 +29,11 @@ class DefaultFirewall implements FirewallInterface, LoggerAwareInterface
     private $allowedDomains = array();
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * {@inheritdoc}
      */
     public function allowIp($ip)
@@ -88,6 +93,7 @@ class DefaultFirewall implements FirewallInterface, LoggerAwareInterface
      */
     public function setLogger(LoggerInterface $logger)
     {
-        // TODO: Implement setLogger() method.
+        $this->logger = $logger;
+        return $this;
     }
 }

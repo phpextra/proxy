@@ -49,6 +49,10 @@ class ProxyTestCase extends PHPUnit_Framework_TestCase
         $this->logHandler = new \Monolog\Handler\TestHandler();
         $monolog = new Monolog\Logger('test', array($this->logHandler));
 
+        $config = new \PHPExtra\Proxy\Config(array(
+            'secret' => 123
+        ));
+
         $logger = new LoggerProxy($monolog);
         $storage = new InMemoryStorage();
 
@@ -60,6 +64,7 @@ class ProxyTestCase extends PHPUnit_Framework_TestCase
 
         $factory = \PHPExtra\Proxy\ProxyFactory::getInstance();
         $factory
+            ->setConfig($config)
             ->setLogger($logger)
             ->setStorage($storage)
             ->setAdapter($adapter)

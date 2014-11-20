@@ -7,11 +7,13 @@
 
 namespace PHPExtra\Proxy\EventListener;
 
+use PHPExtra\Proxy\ConfigInterface;
 use PHPExtra\Proxy\Event\ProxyExceptionEvent;
 use PHPExtra\Proxy\Event\ProxyRequestEvent;
 use PHPExtra\Proxy\Event\ProxyResponseEvent;
 use PHPExtra\Proxy\Exception\CancelledEventException;
 use PHPExtra\Proxy\Firewall\FirewallInterface;
+use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\Response;
 use Psr\Log\LogLevel;
 
@@ -44,30 +46,19 @@ class DefaultProxyListener implements ProxyListenerInterface
      */
     public function onProxyRequest(ProxyRequestEvent $event)
     {
-        if (!$event->isCancelled()) {
+        if (!$event->isCancelled() && !$event->hasResponse()) {
 
             $response = null;
             $request = $event->getRequest();
-            $event->getLogger()->debug(sprintf('%s', $request->getRequestUri()));
             $config = $event->getProxy()->getConfig();
 
-            $proxyUniqueHeaderName = 'PROXY-ID';
-            $proxyUniqueHeaderValue = md5($config->getSecret() . $request->getFingerprint());
-
-            if(in_array($request->getHost(), $config->getHostsOnPort($request->getPort()))){
-                // display proxy welcome page as it is a direct hit
-                $response = new Response($this->getResource('home.html'), 200);
-            }
-
-            if (!$response && $request->hasHeaderWithValue($proxyUniqueHeaderName, $proxyUniqueHeaderValue)) {
+            if($this->isSelfRequest($request, $config)){
                 $event->setIsCancelled();
                 $event->getLogger()->warning(sprintf('Proxy server made a call to itself that cannot be handled, request will be cancelled'));
-            } else {
-                $event->getLogger()->debug(sprintf('Added %s header to request object', $proxyUniqueHeaderName));
-                $request->addHeader($proxyUniqueHeaderName, $proxyUniqueHeaderValue);
-            }
-
-            if(!$response && !$this->firewall->isAllowed($request)){
+            }elseif(in_array($request->getHost(), $config->getHostsOnPort($request->getPort()))){
+                // display proxy welcome page as it is a direct hit
+                $response = new Response($this->getResource('home.html'), 200);
+            }elseif(!$this->firewall->isAllowed($request)){
                 $event->setIsCancelled();
                 $event->getLogger()->debug(sprintf('Request was cancelled as it was not allowed by a firewall'));
             }
@@ -76,6 +67,27 @@ class DefaultProxyListener implements ProxyListenerInterface
                 $event->setResponse($response);
             }
         }
+    }
+
+    /**
+     * Returns true if proxy detected a self-request
+     *
+     * @param RequestInterface $request
+     * @param ConfigInterface  $config
+     *
+     * @return bool
+     */
+    private function isSelfRequest(RequestInterface $request, ConfigInterface $config)
+    {
+        $proxyUniqueHeaderName = 'PROXY-ID';
+        $proxyUniqueHeaderValue = md5($config->getSecret() . $request->getFingerprint());
+
+        if ($request->hasHeaderWithValue($proxyUniqueHeaderName, $proxyUniqueHeaderValue)) {
+            return true;
+        }
+
+        $request->addHeader($proxyUniqueHeaderName, $proxyUniqueHeaderValue);
+        return false;
     }
 
     /**
@@ -136,7 +148,7 @@ class DefaultProxyListener implements ProxyListenerInterface
     {
         if ($event->hasResponse()) {
             $params = array(
-                $event->getRequest()->getRequestUri(),
+                $event->getRequest()->getUri(),
                 $event->getResponse()->getLength(),
                 $event->getResponse()->getStatusCode(),
             );
@@ -155,10 +167,7 @@ class DefaultProxyListener implements ProxyListenerInterface
                 array('response_length' => $event->getResponse()->getLength())
             );
         } else {
-            $event->getLogger()->log(
-                LogLevel::WARNING,
-                'Proxy failed to produce valid response object; it also failed to handle the error that occurred'
-            );
+            $event->getLogger()->warning('Proxy failed to produce valid response object; it also failed to handle the error that occurred');
         }
     }
 
