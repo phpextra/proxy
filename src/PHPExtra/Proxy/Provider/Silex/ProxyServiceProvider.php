@@ -71,6 +71,9 @@ class ProxyServiceProvider implements ServiceProviderInterface, ControllerProvid
         $app['proxy.adapter.name'] = 'guzzle4';
         $app['proxy.storage.filesystem.directory'] = sys_get_temp_dir();
 
+        $app['proxy.firewall.allowed_domains'] = array();
+        $app['proxy.firewall.allowed_clients'] = array();
+
         /**
          * Services and configuration
          */
@@ -102,7 +105,16 @@ class ProxyServiceProvider implements ServiceProviderInterface, ControllerProvid
         );
 
         $app['proxy.firewall'] = $app->share(function() use ($app){
-            return new DefaultFirewall();
+            $firewall = new DefaultFirewall();
+            foreach($app['proxy.firewall.allowed_clients'] as $clientIp){
+                $firewall->allowIp($clientIp);
+            }
+
+            foreach($app['proxy.firewall.allowed_domains'] as $domain){
+                $firewall->allowDomain($domain);
+            }
+
+            return $firewall;
         });
 
         $app['proxy.logger'] = $app->share(function(Application $app){

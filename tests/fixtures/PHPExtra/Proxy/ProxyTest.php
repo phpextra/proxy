@@ -105,7 +105,7 @@ class ProxyTest extends ProxyTestCase
         $this->firewall->allowDomain('google.com'); // allow anything else
         $response = $this->proxy->handle($request);
 
-        $this->assertEquals('<h1>Forbidden</h1><p>Proxy cancelled your request.</p>', $response->getBody());
+        $this->assertEquals($this->getResource('403.html'), $response->getBody());
         $this->assertEquals(403, $response->getStatusCode());
     }
 
@@ -115,8 +115,23 @@ class ProxyTest extends ProxyTestCase
         $this->firewall->allowIp('88.88.88.88');
         $response = $this->proxy->handle($request);
 
-        $this->assertEquals('<h1>Forbidden</h1><p>Proxy cancelled your request.</p>', $response->getBody());
+        $this->assertEquals($this->getResource('403.html'), $response->getBody());
         $this->assertEquals(403, $response->getStatusCode());
+    }
+
+    public function testProxyDisplaysWelcomePageIfRequestedHostIsOnProxyHostsList()
+    {
+        $request = \PHPExtra\Proxy\Http\Request::create('http://localhost/index.html');
+        $this->proxy->setConfig(new \PHPExtra\Proxy\Config(array(
+            'hosts' => array(
+                array('localhost', 80),
+                array('127.0.0.1', 80),
+            )
+        )));
+
+        $response = $this->proxy->handle($request);
+        $this->assertEquals($this->getResource('home.html'), $response->getBody());
+        $this->assertEquals(200, $response->getStatusCode());
     }
 }
  

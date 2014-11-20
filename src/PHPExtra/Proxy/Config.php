@@ -41,7 +41,6 @@ class Config implements ConfigInterface
             'hosts' => array(
                 array('localhost', 80),
                 array('127.0.0.1', 80),
-                array('proxy.local', 9999),
             ),
         );
 

@@ -8,7 +8,7 @@
 use PHPExtra\Proxy\Adapter\Dummy\DummyAdapter;
 use PHPExtra\Proxy\Firewall\FirewallInterface;
 use PHPExtra\Proxy\Logger\LoggerProxy;
-use PHPExtra\Proxy\ProxyInterface;
+use PHPExtra\Proxy\Proxy;
 use PHPExtra\Proxy\Storage\InMemoryStorage;
 
 
@@ -20,7 +20,7 @@ use PHPExtra\Proxy\Storage\InMemoryStorage;
 class ProxyTestCase extends PHPUnit_Framework_TestCase
 {
     /**
-     * @var ProxyInterface
+     * @var Proxy
      */
     protected $proxy;
 
@@ -74,5 +74,15 @@ class ProxyTestCase extends PHPUnit_Framework_TestCase
         $this->storage = $factory->getStorage();
         $this->adapter = $factory->getAdapter();
         $this->proxy = $proxy;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return string
+     */
+    public function getResource($name)
+    {
+        return file_get_contents(sprintf(__DIR__ . '/../resources/html/%s', $name));
     }
 } 

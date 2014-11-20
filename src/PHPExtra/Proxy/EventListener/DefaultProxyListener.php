@@ -54,6 +54,11 @@ class DefaultProxyListener implements ProxyListenerInterface
             $proxyUniqueHeaderName = 'PROXY-ID';
             $proxyUniqueHeaderValue = md5($config->getSecret() . $request->getFingerprint());
 
+            if(in_array($request->getHost(), $config->getHostsOnPort($request->getPort()))){
+                // display proxy welcome page as it is a direct hit
+                $response = new Response($this->getResource('home.html'), 200);
+            }
+
             if (!$response && $request->hasHeaderWithValue($proxyUniqueHeaderName, $proxyUniqueHeaderValue)) {
                 $event->setIsCancelled();
                 $event->getLogger()->warning(sprintf('Proxy server made a call to itself that cannot be handled, request will be cancelled'));
@@ -67,12 +72,9 @@ class DefaultProxyListener implements ProxyListenerInterface
                 $event->getLogger()->debug(sprintf('Request was cancelled as it was not allowed by a firewall'));
             }
 
-            if(in_array($request->getHost(), $config->getHostsOnPort($request->getPort()))){
-                // display proxy welcome page as it is a direct hit
-                $response = new Response(sprintf('<html><h1>It works!</h1><body><p>Find out more about me on <a href="https://github.com/phpextra/proxy">GitHub</a>.</p></body></html>'), 200);
+            if($response){
+                $event->setResponse($response);
             }
-
-            $event->setResponse($response);
         }
     }
 
@@ -111,12 +113,9 @@ class DefaultProxyListener implements ProxyListenerInterface
             $exception = $event->getException();
 
             if($exception instanceof CancelledEventException){
-
-                $message = '<h1>Forbidden</h1><p>Proxy cancelled your request.</p>';
-                $response = new Response($message, 403);
-
+                $response = new Response($this->getResource('403.html'), 403);
             }else{
-                $response = new Response('Proxy was unable to complete your request due to an unknown error', 500);
+                $response = new Response($this->getResource('500.html'), 500);
                 $event->getLogger()->error(sprintf('Proxy caught an exception (%s): %s',
                     get_class($event->getException()), $event->getException()->getMessage())
                 );
@@ -161,5 +160,15 @@ class DefaultProxyListener implements ProxyListenerInterface
                 'Proxy failed to produce valid response object; it also failed to handle the error that occurred'
             );
         }
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return string
+     */
+    protected function getResource($name)
+    {
+        return file_get_contents(sprintf(__DIR__ . '/../../../../resources/html/%s', $name));
     }
 }
