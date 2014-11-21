@@ -98,16 +98,17 @@ interface ResponseInterface extends HttpMessageInterface
     public function getMaxAge();
 
     /**
+     * Get expected lifetime in seconds
+     * Can return null
+     *
+     * @return int
+     */
+    public function getTtl();
+
+    /**
      * @return \DateTime
      */
     public function getDate();
-
-    /**
-     * Returns the response expiration date or null if it was not possible
-     *
-     * @return \DateTime
-     */
-    public function getExpireDate();
 
     /**
      * Send request to output buffer

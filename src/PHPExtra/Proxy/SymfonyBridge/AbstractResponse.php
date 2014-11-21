@@ -49,22 +49,6 @@ class AbstractResponse extends SymfonyResponse implements ResponseInterface
         return parent::getDate();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getExpireDate()
-    {
-        //@todo think about using age directive ?
-        if($this->hasHeader('Max-Age')){
-            $maxAgeInterval = new \DateInterval(sprintf('P%sS', $this->getMaxAge()));
-            $date = $this->getDate()->add($maxAgeInterval);
-        }else{
-            $date = $this->getExpires();
-        }
-
-        return $date;
-    }
-
     // request response shared methods
 
     /**

@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class AbstractRequest extends SymfonyRequest implements RequestInterface
+abstract class AbstractRequest extends SymfonyRequest implements RequestInterface
 {
     /**
      * {@inheritdoc}

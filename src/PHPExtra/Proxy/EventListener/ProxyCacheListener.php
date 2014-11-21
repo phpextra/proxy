@@ -81,28 +81,9 @@ class ProxyCacheListener implements ProxyListenerInterface
             }
 
             if($this->cacheStrategy->canStoreResponseInCache($response, $event->getRequest())){
-                $this->storage->save($request, $response, $this->getCacheLifetime($response));
+                $this->storage->save($request, $response, $response->getTtl());
                 $event->getLogger()->debug('Response was stored in cache');
             }
         }
-    }
-
-    /**
-     * Extract lifetime that the response can be stored for in cache
-     *
-     * @param ResponseInterface $response
-     *
-     * @return int|null
-     */
-    private function getCacheLifetime(ResponseInterface $response)
-    {
-        $lifetime = null;
-        $expireDate = $response->getExpireDate();
-        if($expireDate !== null) {
-            $now = new \DateTime();
-            $lifetime = $now->getTimestamp() - $expireDate->getTimestamp();
-        }
-
-        return $lifetime;
     }
 }
