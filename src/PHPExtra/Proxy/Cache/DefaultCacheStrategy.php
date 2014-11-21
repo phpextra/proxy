@@ -17,7 +17,7 @@ class DefaultCacheStrategy implements CacheStrategyInterface
      */
     public function canUseResponseFromCache(RequestInterface $request, ResponseInterface $cachedResponse = null)
     {
-        if($cachedResponse !== null && !$request->isNoCache()) {
+        if($cachedResponse !== null && $request->getMethod() == 'GET' && !$request->isNoCache()) {
             return $this->isResponseFreshEnoughForTheClient($request, $cachedResponse);
         }
 
@@ -41,7 +41,7 @@ class DefaultCacheStrategy implements CacheStrategyInterface
      *
      * @return bool
      */
-    private function isResponseFreshEnoughForTheClient(RequestInterface $request, ResponseInterface $response)
+    protected function isResponseFreshEnoughForTheClient(RequestInterface $request, ResponseInterface $response)
     {
 
         $compare = array();
@@ -53,7 +53,9 @@ class DefaultCacheStrategy implements CacheStrategyInterface
             $compare[] = $response->getMaxAge();
         }
 
-        if(count($compare) == 0 || ($maxAge = min($compare)) <= 0){
+        $maxAge = min($compare);
+
+        if(count($compare) == 0 || $maxAge <= 0){
             return false;
         }
 
