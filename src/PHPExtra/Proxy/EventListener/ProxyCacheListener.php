@@ -75,7 +75,7 @@ class ProxyCacheListener implements ProxyListenerInterface
             $response = $event->getResponse();
             $request = $event->getRequest();
 
-            if($response->hasHeaderWithValue('X-Cache', 'HIT')){
+            if(!$response->hasHeaderWithValue('X-Cache', 'HIT')){
                 $response->addHeader('X-Cache', 'MISS');
                 $response->addHeader('X-Cache-Hits', 0);
             }
