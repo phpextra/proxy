@@ -35,6 +35,16 @@ interface RequestInterface extends HttpMessageInterface
     /**
      * @return string
      */
+    public function getSchemeAndHttpHost();
+
+    /**
+     * @return string
+     */
+    public function getPathInfo();
+
+    /**
+     * @return string
+     */
     public function getContentType();
 
     /**
