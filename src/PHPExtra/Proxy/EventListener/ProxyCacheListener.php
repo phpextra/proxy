@@ -10,7 +10,6 @@ namespace PHPExtra\Proxy\EventListener;
 use PHPExtra\Proxy\Cache\CacheStrategyInterface;
 use PHPExtra\Proxy\Event\ProxyRequestEvent;
 use PHPExtra\Proxy\Event\ProxyResponseEvent;
-use PHPExtra\Proxy\Http\ResponseInterface;
 use PHPExtra\Proxy\Storage\StorageInterface;
 
 /**
