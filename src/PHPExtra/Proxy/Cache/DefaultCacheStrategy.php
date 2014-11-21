@@ -53,9 +53,7 @@ class DefaultCacheStrategy implements CacheStrategyInterface
             $compare[] = $response->getMaxAge();
         }
 
-        $maxAge = min($compare);
-
-        if(count($compare) == 0 || $maxAge <= 0){
+        if(count($compare) == 0 || ($maxAge = min($compare)) <= 0){
             return false;
         }
 
