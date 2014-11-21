@@ -182,6 +182,7 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     public function handle(RequestInterface $request)
     {
         try {
+            // @todo add request context to events ? (to carry request and response objects)
             $proxyRequestEvent = new ProxyRequestEvent($request, null, $this);
             $this->callProxyEvent($proxyRequestEvent);
 
