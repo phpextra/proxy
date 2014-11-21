@@ -182,20 +182,30 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
     public function handle(RequestInterface $request)
     {
         try {
-            $response = $this->callProxyEvent(new ProxyRequestEvent($request, null, $this))->getResponse();
+            $proxyRequestEvent = new ProxyRequestEvent($request, null, $this);
+            $this->callProxyEvent($proxyRequestEvent);
+
+            $request = $proxyRequestEvent->getRequest();
+            $response = $proxyRequestEvent->getResponse();
 
             if(!$response){
                 $response = $this->adapter->handle($request);
             }
 
-            // response is now ready - if present, for post processing
-            $response = $this->callProxyEvent(new ProxyResponseEvent($request, $response, $this))->getResponse();
+            $proxyResponseEvent = new ProxyResponseEvent($request, $response, $this);
+            $this->callProxyEvent($proxyResponseEvent);
+
+            $response = $proxyResponseEvent->getResponse();
+
         } catch (\Exception $e) {
             if($this->debug == true){
                 throw $e;
             }else{
-                $response = $this->callProxyEvent(new ProxyExceptionEvent($e, $request, null, $this))->getResponse();
-                if($response === null){
+                $proxyExceptionEvent = new ProxyExceptionEvent($e, $request, null, $this);
+                $this->callProxyEvent($proxyExceptionEvent);
+                $response = $proxyExceptionEvent->getResponse();
+
+                if(!$response){
                     throw $this->createProxyException('Proxy failed due to an exception; it was also unable to generate error response', $e);
                 }
             }
@@ -209,8 +219,6 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
      * Throws an exception if event was cancelled
      *
      * @param ProxyEventInterface $event
-     *
-     * @return ProxyEventInterface
      */
     private function callProxyEvent(ProxyEventInterface $event)
     {
@@ -223,8 +231,6 @@ class Proxy implements ProxyInterface, EventManagerAwareInterface, LoggerAwareIn
         if ($event instanceof CancellableEventInterface && $event->isCancelled()) {
             throw new CancelledEventException($event);
         }
-
-        return $event;
     }
 
     /**
