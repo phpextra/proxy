@@ -121,17 +121,26 @@ class ProxyTest extends ProxyTestCase
 
     public function testProxyDisplaysWelcomePageIfRequestedHostIsOnProxyHostsList()
     {
-        $request = \PHPExtra\Proxy\Http\Request::create('http://localhost/index.html');
         $this->proxy->setConfig(new \PHPExtra\Proxy\Config(array(
             'hosts' => array(
                 array('localhost', 80),
                 array('127.0.0.1', 80),
+                array('proxy.local', 9999),
             )
         )));
 
+        $request = \PHPExtra\Proxy\Http\Request::create('http://localhost/index.html');
         $response = $this->proxy->handle($request);
+
         $this->assertEquals($this->getResource('home.html'), $response->getBody());
         $this->assertEquals(200, $response->getStatusCode());
+
+        $request = \PHPExtra\Proxy\Http\Request::create('http://proxy.local:9999');
+        $response = $this->proxy->handle($request);
+
+        $this->assertEquals($this->getResource('home.html'), $response->getBody());
+        $this->assertEquals(200, $response->getStatusCode());
+
     }
 
     public function testProxyReturns403ResponseForSelfRequest()

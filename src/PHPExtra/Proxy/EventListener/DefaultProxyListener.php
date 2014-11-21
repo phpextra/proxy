@@ -40,7 +40,7 @@ class DefaultProxyListener implements ProxyListenerInterface
     /**
      * Filter and mark incoming requests
      *
-     * @priority highest
+     * @priority high
      *
      * @param ProxyRequestEvent $event
      */
