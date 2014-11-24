@@ -43,6 +43,8 @@ class Guzzle4Adapter extends AbstractProxyAdapter
         // @todo add support for exceptions
         $guzzleResponse = $this->client->send($guzzleRequest);
 
+
+
         /** @var \GuzzleHttp\Message\Response $guzzleResponse */
         $response = $this->createResponseFromGuzzleResponse($guzzleResponse);
 
@@ -99,6 +101,7 @@ class Guzzle4Adapter extends AbstractProxyAdapter
         }
 
         $response = new Response($content, $guzzleResponse->getStatusCode());
+        $response->setHeaders($guzzleResponse->getHeaders());
 
         $deniedHeaders = array(
             'transfer-encoding',
@@ -107,10 +110,8 @@ class Guzzle4Adapter extends AbstractProxyAdapter
             'content-encoding',
         );
 
-        foreach ($guzzleResponse->getHeaders() as $name => $value) {
-            if(!in_array($name, $deniedHeaders)){
-                $response->addHeader($name, $value);
-            }
+        foreach ($deniedHeaders as $headerName) {
+            $response->removeHeader($headerName);
         }
 
         return $response;
