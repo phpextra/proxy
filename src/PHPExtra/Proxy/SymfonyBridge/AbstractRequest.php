@@ -86,6 +86,18 @@ abstract class AbstractRequest extends SymfonyRequest implements RequestInterfac
     /**
      * {@inheritdoc}
      */
+    public function setHeaders(array $headers)
+    {
+        foreach($headers as $name => $value){
+            $this->setHeader($name, $value);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getHeader($name, $default = null)
     {
         $header = $this->headers->get($name, $default, false);

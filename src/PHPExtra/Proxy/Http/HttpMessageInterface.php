@@ -4,7 +4,7 @@
  * Copyright (c) 2014 Jacek Kobus <kobus.jacek@gmail.com>
  * See the file LICENSE.txt for copying permission.
  */
- 
+
 namespace PHPExtra\Proxy\Http;
 
 /**
@@ -29,6 +29,13 @@ interface HttpMessageInterface
      * @return $this
      */
     public function setHeader($name, $value);
+
+    /**
+     * @param array $headers
+     *
+     * @return $this
+     */
+    public function setHeaders(array $headers);
 
     /**
      * @param string $name
