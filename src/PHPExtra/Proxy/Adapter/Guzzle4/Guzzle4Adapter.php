@@ -39,6 +39,8 @@ class Guzzle4Adapter extends AbstractProxyAdapter
     public function handle(RequestInterface $request)
     {
         $guzzleRequest = $this->createGuzzleRequestFromRequest($request);
+
+        // @todo add support for exceptions
         $guzzleResponse = $this->client->send($guzzleRequest);
 
         /** @var \GuzzleHttp\Message\Response $guzzleResponse */
@@ -91,6 +93,13 @@ class Guzzle4Adapter extends AbstractProxyAdapter
      */
     protected function createResponseFromGuzzleResponse(GuzzleResponse $guzzleResponse)
     {
+        $content = null;
+        if($guzzleResponse->getBody() !== null){
+            $content = $guzzleResponse->getBody()->getContents();
+        }
+
+        $response = new Response($content, $guzzleResponse->getStatusCode());
+
         $deniedHeaders = array(
             'transfer-encoding',
             'x-powered-by',
@@ -98,16 +107,10 @@ class Guzzle4Adapter extends AbstractProxyAdapter
             'content-encoding',
         );
 
-        $response = new Response(
-            $guzzleResponse->getBody()->getContents(), $guzzleResponse->getStatusCode()
-        );
-
         foreach ($guzzleResponse->getHeaders() as $name => $value) {
-            $response->addHeader($name, $value);
-        }
-
-        foreach ($deniedHeaders as $headerName) {
-            $response->removeHeader($headerName);
+            if(!in_array($name, $deniedHeaders)){
+                $response->addHeader($name, $value);
+            }
         }
 
         return $response;

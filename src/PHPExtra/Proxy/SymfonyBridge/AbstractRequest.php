@@ -25,6 +25,17 @@ abstract class AbstractRequest extends SymfonyRequest implements RequestInterfac
     /**
      * {@inheritdoc}
      */
+    public function setPostParams(array $params)
+    {
+        foreach($params as $name => $value){
+            $this->request->set($name, $value);
+        }
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getPostParams()
     {
         return $this->request->all();
