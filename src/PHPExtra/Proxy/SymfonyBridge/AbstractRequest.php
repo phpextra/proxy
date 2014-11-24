@@ -13,6 +13,11 @@ use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 abstract class AbstractRequest extends SymfonyRequest implements RequestInterface
 {
     /**
+     * @var string
+     */
+    private $host;
+
+    /**
      * {@inheritdoc}
      */
     public function getFingerprint()
@@ -20,6 +25,51 @@ abstract class AbstractRequest extends SymfonyRequest implements RequestInterfac
         return md5(
             $this->getMethod() . $this->getHttpHost() . $this->getRequestUri() . serialize($this->getPostParams()) . serialize($this->getQueryParams())
         );
+    }
+
+    /**
+     * Set host. This does not change the header value.
+     *
+     * @param string $host
+     *
+     * @return $this
+     */
+    public function setHost($host)
+    {
+        $this->host = $host;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getHost()
+    {
+        if($this->host !== null){
+            return $this->host;
+        }
+
+        return parent::getHost();
+    }
+
+    /**
+     * @param string $host
+     *
+     * @return $this
+     */
+    public function setHostHeader($host)
+    {
+        $this->setHeader('host', $host);
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getHostHeader()
+    {
+        $host = $this->getHeader('host');
+        return is_array($host) && isset($host[0]) ? $host[0] : null;
     }
 
     /**

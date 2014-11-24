@@ -58,9 +58,19 @@ interface RequestInterface extends HttpMessageInterface
     public function getScheme();
 
     /**
+     * Return host. If no host was set it uses few searching techniques to detect the real host for this request.
+     *
      * @return string
      */
     public function getHost();
+
+    /**
+     * Get host header value
+     * This might be different than host set using setHost method
+     *
+     * @return string|null
+     */
+    public function getHostHeader();
 
     /**
      * @return array
