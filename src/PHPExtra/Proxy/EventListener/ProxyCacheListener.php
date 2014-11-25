@@ -28,21 +28,15 @@ class ProxyCacheListener implements ProxyListenerInterface
      * @var StorageInterface
      */
     private $storage;
-    /**
-     * @var
-     */
-    private $stalledLifetime;
 
     /**
      * @param CacheStrategyInterface $cacheStrategy
      * @param StorageInterface       $storage
-     * @param integer                $stalledLifetime
      */
-    function __construct(CacheStrategyInterface $cacheStrategy, StorageInterface $storage, $stalledLifetime = 3600)
+    function __construct(CacheStrategyInterface $cacheStrategy, StorageInterface $storage)
     {
         $this->cacheStrategy = $cacheStrategy;
         $this->storage = $storage;
-        $this->stalledLifetime = $stalledLifetime;
     }
 
     /**
@@ -80,7 +74,7 @@ class ProxyCacheListener implements ProxyListenerInterface
             $request = $event->getRequest();
             $logger = $event->getLogger();
 
-            if($response->isServerError() && $this->stalledLifetime != 0) {
+            if($response->isServerError() && $event->getProxy()->getConfig()->isStallingResponsesEnabled()) {
                 $logger->warning(sprintf('Server returned error %d', $response->getStatusCode()));
                 $stalledResponse = $this->storage->fetch($request);
 
@@ -98,7 +92,7 @@ class ProxyCacheListener implements ProxyListenerInterface
             }
 
             if($this->cacheStrategy->canStoreResponseInCache($response, $event->getRequest())){
-                $this->storage->save($request, $response, $response->getTtl() + $this->stalledLifetime);
+                $this->storage->save($request, $response);
                 $logger->debug('Response was stored in cache');
             }
         }

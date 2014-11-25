@@ -47,4 +47,11 @@ interface ConfigInterface
      * @return array
      */
     public function getAllHosts();
+
+    /**
+     * Check if stalling responses on error is enabled.
+     *
+     * @return boolean
+     */
+    public function isStallingResponsesEnabled();
 }

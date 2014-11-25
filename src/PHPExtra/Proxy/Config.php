@@ -30,6 +30,11 @@ class Config implements ConfigInterface
     private $hosts = array();
 
     /**
+     * @var boolean
+     */
+    private $isStallingResponsesEnabled = true;
+
+    /**
      * @param array $config
      */
     function __construct(array $config = array())
@@ -42,6 +47,7 @@ class Config implements ConfigInterface
                 array('localhost', 80),
                 array('127.0.0.1', 80),
             ),
+            'stalling_responses_enabled' => true
         );
 
         $config = array_merge($default, $config);
@@ -49,6 +55,7 @@ class Config implements ConfigInterface
         $this->proxyName = $config['name'];
         $this->proxyVersion = $config['version'];
         $this->secret = $config['secret'];
+        $this->isStallingResponsesEnabled = $config['stalling_responses_enabled'];
 
         foreach($config['hosts'] as $id => $hostDetails){
             $this->hosts[$hostDetails[1]][] = $hostDetails[0];
@@ -99,4 +106,13 @@ class Config implements ConfigInterface
         return $hosts;
     }
 
-} 
+    /**
+     * Check if stalling responses on error is enabled.
+     *
+     * @return boolean
+     */
+    public function isStallingResponsesEnabled()
+    {
+        return $this->isStallingResponsesEnabled;
+    }
+}
