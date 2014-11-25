@@ -47,4 +47,11 @@ interface ConfigInterface
      * @return array
      */
     public function getAllHosts();
+
+    /**
+     * Get resource path.
+     *
+     * @return string
+     */
+    public function getResourcePath();
 }
