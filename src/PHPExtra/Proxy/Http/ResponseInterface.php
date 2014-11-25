@@ -58,6 +58,11 @@ interface ResponseInterface extends HttpMessageInterface
     /**
      * @return bool
      */
+    public function isServerError();
+
+    /**
+     * @return bool
+     */
     public function isOk();
 
     /**

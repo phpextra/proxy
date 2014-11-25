@@ -28,15 +28,21 @@ class ProxyCacheListener implements ProxyListenerInterface
      * @var StorageInterface
      */
     private $storage;
+    /**
+     * @var
+     */
+    private $stalledLifetime;
 
     /**
      * @param CacheStrategyInterface $cacheStrategy
      * @param StorageInterface       $storage
+     * @param integer                $stalledLifetime
      */
-    function __construct(CacheStrategyInterface $cacheStrategy, StorageInterface $storage)
+    function __construct(CacheStrategyInterface $cacheStrategy, StorageInterface $storage, $stalledLifetime = 3600)
     {
         $this->cacheStrategy = $cacheStrategy;
         $this->storage = $storage;
+        $this->stalledLifetime = $stalledLifetime;
     }
 
     /**
@@ -69,10 +75,22 @@ class ProxyCacheListener implements ProxyListenerInterface
      */
     public function onProxyResponse(ProxyResponseEvent $event)
     {
-        if(!$event->isCancelled() && $event->hasResponse()){
-
+        if(!$event->isCancelled() && $event->hasResponse()) {
             $response = $event->getResponse();
             $request = $event->getRequest();
+            $logger = $event->getLogger();
+
+            if($response->isServerError() && $this->stalledLifetime != 0) {
+                $logger->warning(sprintf('Server returned error %d', $response->getStatusCode()));
+                $stalledResponse = $this->storage->fetch($request);
+
+                if($stalledResponse !== null) {
+                    $logger->warning('Returning stalled response');
+                    $event->setResponse($stalledResponse);
+                } else {
+                    $logger->warning('Stalled response not available, returning error response!');
+                }
+            }
 
             if(!$response->hasHeaderWithValue('X-Cache', 'HIT')){
                 $response->addHeader('X-Cache', 'MISS');
@@ -80,8 +98,8 @@ class ProxyCacheListener implements ProxyListenerInterface
             }
 
             if($this->cacheStrategy->canStoreResponseInCache($response, $event->getRequest())){
-                $this->storage->save($request, $response, $response->getTtl());
-                $event->getLogger()->debug('Response was stored in cache');
+                $this->storage->save($request, $response, $response->getTtl() + $this->stalledLifetime);
+                $logger->debug('Response was stored in cache');
             }
         }
     }

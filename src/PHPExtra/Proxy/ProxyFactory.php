@@ -170,7 +170,7 @@ class ProxyFactory implements ProxyFactoryInterface
 
             $this->eventManager
                 ->addListener(new DefaultProxyListener($this->getFirewall()))
-                ->addListener(new ProxyCacheListener($this->getCacheStrategy(), $this->getStorage()))
+                ->addListener(new ProxyCacheListener($this->getCacheStrategy(), $this->getStorage(), 3600))
             ;
         }
         return $this->eventManager;
