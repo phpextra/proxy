@@ -1,4 +1,5 @@
 <?php
+use PHPExtra\Proxy\Http\RequestInterface;
 
 /**
  * The ProxyTest class
@@ -83,6 +84,27 @@ class ProxyTest extends ProxyTestCase
 
         $response = $this->proxy->handle($request);
         $this->assertEquals('OK', $response->getBody());
+    }
+
+    public function testProxyDoesNotCacheResponseIfItIsServerError()
+    {
+        $request1 = \PHPExtra\Proxy\Http\Request::create('http://onet.pl/index.html');
+        $request1->addHeader('Max-Age', 60000);
+
+        $request2 = clone $request1;
+
+        $response = new \PHPExtra\Proxy\Http\Response('Server error', 503);
+        $response->setPublic();
+        $response->setSharedMaxAge(60000);
+
+        $this->adapter->setHandler(function(RequestInterface $request) use($response) {
+            return $response;
+        });
+
+        $this->proxy->handle($request1);
+        $response = $this->proxy->handle($request2);
+
+        $this->assertTrue($response->hasHeaderWithValue('X-Cache', 'MISS'));
     }
 
     public function testProxyReturnsCachedResponseIfClientMaxAgeIsGreaterThanResponseAge()
