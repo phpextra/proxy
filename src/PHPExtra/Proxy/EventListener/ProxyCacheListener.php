@@ -57,6 +57,7 @@ class ProxyCacheListener implements ProxyListenerInterface
                 $event->getLogger()->debug('Response was read from cache');
                 $response->addHeader('X-Cache', 'HIT');
                 $response->addHeader('X-Cache-Hits', 1);
+                $response->setHeader('Age', time() - $response->getDate()->getTimestamp());
                 $event->setResponse($response);
             }
         }
