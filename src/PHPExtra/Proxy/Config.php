@@ -30,6 +30,11 @@ class Config implements ConfigInterface
     private $hosts = array();
 
     /**
+     * @var string
+     */
+    private $resourcePath;
+
+    /**
      * @var boolean
      */
     private $isStallingResponsesEnabled = true;
@@ -47,6 +52,7 @@ class Config implements ConfigInterface
                 array('localhost', 80),
                 array('127.0.0.1', 80),
             ),
+            'resource_path' => __DIR__.'/../../../resources/html/'
             'stalling_responses_enabled' => true
         );
 
@@ -56,6 +62,7 @@ class Config implements ConfigInterface
         $this->proxyVersion = $config['version'];
         $this->secret = $config['secret'];
         $this->isStallingResponsesEnabled = $config['stalling_responses_enabled'];
+        $this->resourcePath = $config['resource_path'];
 
         foreach($config['hosts'] as $id => $hostDetails){
             $this->hosts[$hostDetails[1]][] = $hostDetails[0];
@@ -107,6 +114,15 @@ class Config implements ConfigInterface
     }
 
     /**
+     * Get resource path.
+     *
+     * @return string
+     */
+    public function getResourcePath()
+    {
+        return $this->resourcePath;
+    }
+}    /**
      * Check if stalling responses on error is enabled.
      *
      * @return boolean

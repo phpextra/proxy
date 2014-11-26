@@ -15,6 +15,7 @@ use PHPExtra\Proxy\Exception\CancelledEventException;
 use PHPExtra\Proxy\Firewall\FirewallInterface;
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\Response;
+use PHPExtra\Proxy\ProxyInterface;
 use Psr\Log\LogLevel;
 
 /**
@@ -57,7 +58,7 @@ class DefaultProxyListener implements ProxyListenerInterface
                 $event->getLogger()->warning(sprintf('Proxy server made a call to itself that cannot be handled, request will be cancelled'));
             }elseif(in_array($request->getHost(), $config->getHostsOnPort($request->getPort()))){
                 // display proxy welcome page as it is a direct hit
-                $response = new Response($this->getResource('home.html'), 200);
+                $response = new Response($this->getResource('home.html', $event->getProxy()), 200);
             }elseif(!$this->firewall->isAllowed($request)){
                 $event->setIsCancelled();
                 $event->getLogger()->debug(sprintf('Request was cancelled as it was not allowed by a firewall'));
@@ -125,9 +126,9 @@ class DefaultProxyListener implements ProxyListenerInterface
             $exception = $event->getException();
 
             if($exception instanceof CancelledEventException){
-                $response = new Response($this->getResource('403.html'), 403);
+                $response = new Response($this->getResource('403.html', $event->getProxy()), 403);
             }else{
-                $response = new Response($this->getResource('500.html'), 500);
+                $response = new Response($this->getResource('500.html', $event->getProxy()), 500);
                 $event->getLogger()->error(sprintf('Proxy caught an exception (%s): %s',
                     get_class($event->getException()), $event->getException()->getMessage())
                 );
@@ -172,12 +173,13 @@ class DefaultProxyListener implements ProxyListenerInterface
     }
 
     /**
-     * @param string $name
+     * @param string         $name
+     * @param ProxyInterface $proxy
      *
      * @return string
      */
-    protected function getResource($name)
+    protected function getResource($name, ProxyInterface $proxy)
     {
-        return file_get_contents(sprintf(__DIR__ . '/../../../../resources/html/%s', $name));
+        return file_get_contents($proxy->getConfig()->getResourcePath() . $name);
     }
 }
