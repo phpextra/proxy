@@ -139,40 +139,6 @@ class DefaultProxyListener implements ProxyListenerInterface
     }
 
     /**
-     * Monitor outcome of an event
-     *
-     * @priority monitor
-     *
-     * @param ProxyResponseEvent $event
-     */
-    public function onLateProxyResponse(ProxyResponseEvent $event)
-    {
-        if ($event->hasResponse()) {
-            $params = array(
-                $event->getRequest()->getUri(),
-                $event->getResponse()->getLength(),
-                $event->getResponse()->getStatusCode(),
-            );
-
-            if ($event->getResponse()->getStatusCode() != 200) {
-                $level = LogLevel::WARNING;
-                $params[4] = '';
-            } else {
-                $level = LogLevel::INFO;
-                $params[4] = 'OK';
-            }
-
-            $event->getLogger()->log(
-                $level,
-                vsprintf('< %s %s byte(s) %s %s', $params),
-                array('response_length' => $event->getResponse()->getLength())
-            );
-        } else {
-            $event->getLogger()->warning('Proxy failed to produce valid response object; it also failed to handle the error that occurred');
-        }
-    }
-
-    /**
      * @param string         $name
      * @param ProxyInterface $proxy
      *

@@ -14,7 +14,7 @@ class ProxyServiceProviderTest extends PHPUnit_Framework_TestCase
 
         $silex = new Silex\Application(array(
             'debug' => true,
-            'logger' => $logger
+            'logger' => $logger,
         ));
 
         $silex->register(new \PHPExtra\Proxy\Provider\Silex\ProxyServiceProvider(), array(
@@ -24,7 +24,7 @@ class ProxyServiceProviderTest extends PHPUnit_Framework_TestCase
             'proxy.adapter.dummy.handler' => $silex->protect(function(\PHPExtra\Proxy\Http\RequestInterface $request){
                 return new \PHPExtra\Proxy\Http\Response('I see ' . $request->getRequestUri());
             }),
-            'proxy.logger' => $logger,
+            'proxy.logger.access_log' => $logger,
         ));
 
         $silex->register(new \PHPExtra\EventManager\Silex\EventManagerServiceProvider());
