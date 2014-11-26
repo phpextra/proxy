@@ -86,7 +86,7 @@ class AccessLoggerListener implements ProxyListenerInterface
         $data = array();
         $data[] = $xcache;
         $data[] = bcdiv($time, 1000, 4); // milliseconds
-        $data[] = $request->getClientIp();
+        $data[] = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1'; // @todo ip is always set to 127.0.0.1 due to broken request object
         $data[] = $request->getMethod();
         $data[] = $request->getUri();
         $data[] = $response ? $response->getStatusCode() : '-'; // bytes
