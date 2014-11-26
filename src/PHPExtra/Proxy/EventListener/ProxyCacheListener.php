@@ -86,6 +86,11 @@ class ProxyCacheListener implements ProxyListenerInterface
                 $response->addHeader('X-Cache-Hits', 0);
             }
 
+            $oldVia = $response->getHeader('Via');
+            $oldVia[] = $event->getProxy()->getConfig()->getProxyName();
+
+            $response->setHeader('Via', $oldVia);
+
             if($this->cacheStrategy->canStoreResponseInCache($response, $event->getRequest())){
                 $this->storage->save($request, $response, $response->getTtl());
                 $event->getLogger()->debug('Response was stored in cache');

@@ -197,5 +197,38 @@ class ProxyTest extends ProxyTestCase
         $this->assertEquals($this->getResource('403.html'), $response->getBody());
         $this->assertEquals(403, $response->getStatusCode());
     }
+
+    public function testProxyAppendsViaHeaderToResponseAlreadyContainingViaHeader()
+    {
+        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/');
+
+        $this->adapter->setHandler(function (RequestInterface $request) {
+            $response = new \PHPExtra\Proxy\Http\Response('OK', 200);
+            $response->setHeader('Via', 'proxy 01-test');
+            return $response;
+        });
+
+        $response = $this->proxy->handle($request);
+
+        $viaHeaders = $response->getHeader('Via');
+        $this->assertEquals(2, count($viaHeaders));
+        $this->assertEquals('proxy 01-test', $viaHeaders[0]);
+        $this->assertEquals('PHPExtraProxyServer', $viaHeaders[1]);
+    }
+
+    public function testProxyAppendsViaHeaderToResponseWithoutViaHeader()
+    {
+        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/');
+
+        $this->adapter->setHandler(function (RequestInterface $request) {
+            return new \PHPExtra\Proxy\Http\Response('OK', 200);
+        });
+
+        $response = $this->proxy->handle($request);
+
+        $viaHeaders = $response->getHeader('Via');
+        $this->assertEquals(1, count($viaHeaders));
+        $this->assertEquals('PHPExtraProxyServer', $viaHeaders[0]);
+    }
 }
  
