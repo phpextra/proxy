@@ -45,14 +45,14 @@ class Config implements ConfigInterface
     function __construct(array $config = array())
     {
         $default = array(
-            'name'      => 'PHPExtraProxyServer',
-            'version'   => '1.0.0',
-            'secret'   => md5(__FILE__),
+            'name' => 'PHPExtraProxyServer',
+            'version' => '1.0.0',
+            'secret' => md5(__FILE__),
             'hosts' => array(
                 array('localhost', 80),
                 array('127.0.0.1', 80),
             ),
-            'resource_path' => __DIR__.'/../../../resources/html/'
+            'resource_path' => __DIR__ . '/../../../resources/html/',
             'stalling_responses_enabled' => true
         );
 
@@ -64,7 +64,7 @@ class Config implements ConfigInterface
         $this->isStallingResponsesEnabled = $config['stalling_responses_enabled'];
         $this->resourcePath = $config['resource_path'];
 
-        foreach($config['hosts'] as $id => $hostDetails){
+        foreach ($config['hosts'] as $id => $hostDetails) {
             $this->hosts[$hostDetails[1]][] = $hostDetails[0];
         }
     }
@@ -98,7 +98,7 @@ class Config implements ConfigInterface
      */
     public function getHostsOnPort($port = 80)
     {
-        return isset($this->hosts[$port])?$this->hosts[$port]:array();
+        return isset($this->hosts[$port]) ? $this->hosts[$port] : array();
     }
 
     /**
@@ -107,7 +107,7 @@ class Config implements ConfigInterface
     public function getAllHosts()
     {
         $hosts = array();
-        foreach($this->hosts as $port => $host){
+        foreach ($this->hosts as $port => $host) {
             $hosts[] = $host;
         }
         return $hosts;
@@ -122,7 +122,8 @@ class Config implements ConfigInterface
     {
         return $this->resourcePath;
     }
-}    /**
+
+    /**
      * Check if stalling responses on error is enabled.
      *
      * @return boolean
