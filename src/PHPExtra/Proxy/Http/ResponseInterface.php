@@ -117,4 +117,11 @@ interface ResponseInterface extends HttpMessageInterface
      */
     public function send();
 
+    /**
+     * @param \DateTime $date
+     *
+     * @return mixed
+     */
+    public function setDate(\DateTime $date);
+
 }
