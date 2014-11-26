@@ -1,15 +1,19 @@
 <?php
 
+/**
+ * Copyright (c) 2014 Paweł Łuczkiewicz <me@agares.info>
+ * See the file LICENSE.txt for copying permission.
+ */
+
 namespace PHPExtra\Proxy\Storage;
 
 use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\MemcachedCache;
-use Prophecy\Doubler\CachedDoubler;
 
 /**
  * Memcache storage implementation
  *
- * @package PHPExtra\Proxy\Storage
+ * @author Paweł Łuczkiewicz <me@agares.info>
  */
 class MemcachedStorage extends DoctrineCacheStorage
 {
