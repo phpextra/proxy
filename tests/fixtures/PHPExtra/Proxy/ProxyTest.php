@@ -141,6 +141,26 @@ class ProxyTest extends ProxyTestCase
         $this->assertEquals(403, $response->getStatusCode());
     }
 
+    public function testCachedProxyResponseHasAgeHeader()
+    {
+        $request = \PHPExtra\Proxy\Http\Request::create('http://example.com/index.html');
+        $response = new \PHPExtra\Proxy\Http\Response('OK', 200);
+        $response->setDate(new DateTime('-1 day'));
+        $response->setPublic();
+        $response->setSharedMaxAge(200000);
+
+        $this->storage->save($request, $response);
+
+        $handledResponse = $this->proxy->handle($request);
+
+        $this->assertTrue($handledResponse->hasHeader('Age'), 'No Age header on response');
+        $ageHeaders = $handledResponse->getHeader('Age');
+
+        // todo mock time somehow, or work around
+        $this->assertGreaterThanOrEqual(86400, $ageHeaders[0], 'Age was too small.');
+        $this->assertGreaterThan(0, $ageHeaders[0]);
+    }
+
     public function testProxyDisplaysWelcomePageIfRequestedHostIsOnProxyHostsList()
     {
         $this->proxy->setConfig(new \PHPExtra\Proxy\Config(array(
