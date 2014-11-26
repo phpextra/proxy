@@ -51,7 +51,7 @@ class Guzzle4Adapter extends AbstractProxyAdapter
                 throw $e;
             }
 
-            throw new RemoteServerCommunicationErrorException('Cannot connect to remote server', 0, $e);
+            throw new RemoteServerCommunicationErrorException($e->getRequest()->getUrl(), $e);
         }
 
         /** @var \GuzzleHttp\Message\Response $guzzleResponse */

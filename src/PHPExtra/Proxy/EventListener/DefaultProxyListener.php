@@ -12,6 +12,7 @@ use PHPExtra\Proxy\Event\ProxyExceptionEvent;
 use PHPExtra\Proxy\Event\ProxyRequestEvent;
 use PHPExtra\Proxy\Event\ProxyResponseEvent;
 use PHPExtra\Proxy\Exception\CancelledEventException;
+use PHPExtra\Proxy\Exception\RemoteServerCommunicationErrorException;
 use PHPExtra\Proxy\Firewall\FirewallInterface;
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\Response;
@@ -127,7 +128,11 @@ class DefaultProxyListener implements ProxyListenerInterface
 
             if($exception instanceof CancelledEventException){
                 $response = new Response($this->getResource('403.html', $event->getProxy()), 403);
-            }else{
+            } else if($exception instanceof RemoteServerCommunicationErrorException) {
+                $response = new Response($this->getResource('502.html', $event->getProxy()), 502);
+
+                $event->getLogger()->error(sprintf('Remote server could not be contacted. Requested URI: %s', $exception->getRequestedUri()));
+            } else {
                 $response = new Response($this->getResource('500.html', $event->getProxy()), 500);
                 $event->getLogger()->error(sprintf('Proxy caught an exception (%s): %s',
                     get_class($event->getException()), $event->getException()->getMessage())
