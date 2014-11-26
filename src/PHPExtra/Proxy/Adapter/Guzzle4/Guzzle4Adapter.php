@@ -8,6 +8,8 @@
 namespace PHPExtra\Proxy\Adapter\Guzzle4;
 
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\RequestException;
+use PHPExtra\Proxy\Exception\ServerException;
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\Response;
 use PHPExtra\Proxy\Adapter\AbstractProxyAdapter;
@@ -40,10 +42,15 @@ class Guzzle4Adapter extends AbstractProxyAdapter
     {
         $guzzleRequest = $this->createGuzzleRequestFromRequest($request);
 
-        // @todo add support for exceptions
-        $guzzleResponse = $this->client->send($guzzleRequest);
+        try {
+            $guzzleResponse = $this->client->send($guzzleRequest);
+        } catch(RequestException $e) {
+            if($e->hasResponse() && ($e->getCode() < 400)) {
+                throw new ServerException('Server error occured', 0, $e);
+            }
 
-
+            throw $e;
+        }
 
         /** @var \GuzzleHttp\Message\Response $guzzleResponse */
         $response = $this->createResponseFromGuzzleResponse($guzzleResponse);
