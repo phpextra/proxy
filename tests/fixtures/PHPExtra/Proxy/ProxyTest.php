@@ -197,5 +197,22 @@ class ProxyTest extends ProxyTestCase
         $this->assertEquals($this->getResource('403.html'), $response->getBody());
         $this->assertEquals(403, $response->getStatusCode());
     }
+
+    public function testProxyReturnsStalledResponseOnServerError()
+    {
+        $request1 = \PHPExtra\Proxy\Http\Request::create('http://example.com/');
+        $request2 = clone $request1;
+        $response = new \PHPExtra\Proxy\Http\Response('OK', 200);
+
+        $this->storage->save($request1, $response);
+        $this->adapter->setHandler(function(RequestInterface $request) {
+            return new \PHPExtra\Proxy\Http\Response('Failure', 502);
+        });
+
+        $response = $this->proxy->handle($request1);
+
+        $this->assertEquals('OK', $response->getBody());
+        $this->assertEquals(200, $response->getStatusCode());
+    }
 }
  

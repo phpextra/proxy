@@ -54,4 +54,11 @@ interface ConfigInterface
      * @return string
      */
     public function getResourcePath();
+
+    /**
+     * Check if stalling responses on error is enabled.
+     *
+     * @return boolean
+     */
+    public function isStallingResponsesEnabled();
 }
