@@ -4,16 +4,15 @@
  * Copyright (c) 2014 Jacek Kobus <kobus.jacek@gmail.com>
  * See the file LICENSE.txt for copying permission.
  */
-
-namespace PHPExtra\Proxy\Http;
-
-use Phly\Http\IncomingRequest;
+ 
+namespace PHPExtra\Proxy\Http\Message;
 
 /**
- * The Request class
+ * The OutgoingResponseInterface interface
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class Request extends IncomingRequest
+interface OutgoingResponseInterface extends \Psr\Http\Message\OutgoingResponseInterface
 {
-}
+
+} 

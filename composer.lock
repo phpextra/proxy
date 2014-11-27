@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ca76921608ef0e33ada9c8e26dff5b5b",
+    "hash": "6dd0ecec6835029e01ad6911d80f2159",
     "packages": [
         {
             "name": "doctrine/cache",
@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/cache.git",
-                "reference": "7b625bf42f08ceb3e7dc7852095ef5e1a5756884"
+                "reference": "85ff6118558d7b2501cd85b31bdc1ffc0cab731a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/cache/zipball/7b625bf42f08ceb3e7dc7852095ef5e1a5756884",
-                "reference": "7b625bf42f08ceb3e7dc7852095ef5e1a5756884",
+                "url": "https://api.github.com/repos/doctrine/cache/zipball/85ff6118558d7b2501cd85b31bdc1ffc0cab731a",
+                "reference": "85ff6118558d7b2501cd85b31bdc1ffc0cab731a",
                 "shasum": ""
             },
             "require": {
@@ -74,7 +74,7 @@
                 "cache",
                 "caching"
             ],
-            "time": "2014-11-24 16:07:53"
+            "time": "2014-11-27 00:22:12"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -265,6 +265,58 @@
                 "psr-3"
             ],
             "time": "2014-11-11 12:05:51"
+        },
+        {
+            "name": "phly/http",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phly/http.git",
+                "reference": "6ec462fa192645dcfc29b082ce9c3da82ecd15dc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phly/http/zipball/6ec462fa192645dcfc29b082ce9c3da82ecd15dc",
+                "reference": "6ec462fa192645dcfc29b082ce9c3da82ecd15dc",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.8",
+                "psr/http-message": "~0.5.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "3.7.*",
+                "squizlabs/php_codesniffer": "1.5.*"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0-dev",
+                    "dev-develop": "1.1-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phly\\Http\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Matthew Weier O'Phinney",
+                    "email": "matthew@weierophinney.net",
+                    "homepage": "http://mwop.net"
+                }
+            ],
+            "description": "PSR HTTP Message implementations",
+            "homepage": "https://github.com/phly/http",
+            "keywords": [
+                "http"
+            ],
+            "time": "2014-11-10 17:49:38"
         },
         {
             "name": "phpextra/collection",
@@ -614,6 +666,52 @@
                 "dependency injection"
             ],
             "time": "2014-04-20 07:24:09"
+        },
+        {
+            "name": "psr/http-message",
+            "version": "0.5.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-message.git",
+                "reference": "18619eee10ecf266bafe048e5a2922fa20938498"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/18619eee10ecf266bafe048e5a2922fa20938498",
+                "reference": "18619eee10ecf266bafe048e5a2922fa20938498",
+                "shasum": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP messages",
+            "keywords": [
+                "http",
+                "http-message",
+                "psr",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "time": "2014-11-04 14:03:01"
         },
         {
             "name": "psr/log",
@@ -1999,6 +2097,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "psr/http-message": 20,
+        "phly/http": 20,
         "phpextra/event-manager": 20,
         "phpextra/event-manager-silex-provider": 20
     },
