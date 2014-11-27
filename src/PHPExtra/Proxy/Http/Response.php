@@ -7,13 +7,17 @@
 
 namespace PHPExtra\Proxy\Http;
 
-use PHPExtra\Proxy\SymfonyBridge\AbstractResponse;
+use Phly\Http\OutgoingResponse;
 
 /**
  * The Response class
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class Response extends AbstractResponse
+class Response extends OutgoingResponse implements ResponseInterface
 {
+    public function setMaxAge($ttl)
+    {
+        $this->setHeader('Cache-control', sprintf('max-age=%s, s-maxage=%s', $ttl, $ttl));
+    }
 }

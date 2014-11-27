@@ -2,6 +2,7 @@
 
 namespace PHPExtra\Proxy\SymfonyBridge;
 
+use Phly\Http\Stream;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
 /**
@@ -9,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class Request extends AbstractRequest
+class Request extends \PHPExtra\Proxy\Http\Request
 {
     /**
      * @var SymfonyRequest
@@ -21,26 +22,17 @@ class Request extends AbstractRequest
      */
     function __construct(SymfonyRequest $symfonyRequest)
     {
-        $this->symfonyRequest = $symfonyRequest;
-
-        $this->request = $symfonyRequest->request;
-        $this->query = $symfonyRequest->query;
-        $this->attributes = $symfonyRequest->attributes;
-        $this->cookies = $symfonyRequest->cookies;
-        $this->files = $symfonyRequest->files;
-        $this->server = $symfonyRequest->server;
-        $this->headers = $symfonyRequest->headers;
-
-        $this->content = $symfonyRequest->content;
-        $this->languages = $symfonyRequest->languages;
-        $this->charsets = $symfonyRequest->charsets;
-        $this->encodings = $symfonyRequest->encodings;
-        $this->acceptableContentTypes = $symfonyRequest->acceptableContentTypes;
-        $this->pathInfo = $symfonyRequest->pathInfo;
-        $this->requestUri = $symfonyRequest->requestUri;
-        $this->baseUrl = $symfonyRequest->baseUrl;
-        $this->basePath = $symfonyRequest->basePath;
-        $this->method = $symfonyRequest->method;
-        $this->format = $symfonyRequest->format;
+        parent::__construct(
+            $symfonyRequest->getUri(),
+            $symfonyRequest->getMethod(),
+            $symfonyRequest->headers->all(),
+            new Stream($symfonyRequest->getContent(true)),
+            $symfonyRequest->server->all(),
+            $symfonyRequest->cookies->all(),
+            $symfonyRequest->query->all(),
+            $symfonyRequest->request->all(),
+            $symfonyRequest->files->all(),
+            $symfonyRequest->attributes->all()
+        );
     }
 }

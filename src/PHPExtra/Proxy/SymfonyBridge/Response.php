@@ -2,20 +2,25 @@
 
 namespace PHPExtra\Proxy\SymfonyBridge;
 
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Psr\Http\Message\OutgoingResponseInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse as SymfonyStreamedResponse;
 
 /**
- * The Request class
+ * The Response class
  *
  * @author Jacek Kobus <kobus.jacek@gmail.com>
  */
-class Response extends AbstractResponse
+class Response extends SymfonyStreamedResponse
 {
     /**
-     * @param SymfonyResponse $symfonyResponse
+     * @param OutgoingResponseInterface $response
      */
-    function __construct(SymfonyResponse $symfonyResponse)
+    function __construct(OutgoingResponseInterface $response)
     {
-        parent::__construct($symfonyResponse->getContent(), $symfonyResponse->getStatusCode(), $symfonyResponse->headers->all());
+        $callback = function() use ($response){
+            return $response->getBody()->getContents();
+        };
+
+        parent::__construct($callback, $response->getStatusCode(), $response->getHeaders());
     }
 }
