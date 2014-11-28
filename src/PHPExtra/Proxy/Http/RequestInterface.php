@@ -117,5 +117,5 @@ interface RequestInterface extends HttpMessageInterface
     /**
      * @return string
      */
-    public function getContent();
+    public function getBody();
 }
