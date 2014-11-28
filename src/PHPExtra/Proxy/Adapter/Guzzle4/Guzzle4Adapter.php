@@ -77,7 +77,7 @@ class Guzzle4Adapter extends AbstractProxyAdapter
             $request->getUri(),
             array(
                 'headers'       => $headers,
-                'body'          => $request->getPostParams(),
+                'body'          => $request->getBody(),
                 'query'         => $request->getQueryParams(),
                 'cookies'       => $request->getCookies(),
                 'exceptions'    => false,
