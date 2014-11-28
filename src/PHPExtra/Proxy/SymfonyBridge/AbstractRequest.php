@@ -207,8 +207,7 @@ abstract class AbstractRequest extends SymfonyRequest implements RequestInterfac
     public function getContent()
     {
         $content = parent::getContent();
-        if(is_resource($content))
-        {
+        if(is_resource($content)) {
             return stream_get_contents($content);
         }
 
