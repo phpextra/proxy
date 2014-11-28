@@ -200,4 +200,18 @@ abstract class AbstractRequest extends SymfonyRequest implements RequestInterfac
     {
         return $this->headers->contains($name, $value);
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getContent()
+    {
+        $content = parent::getContent();
+        if(is_resource($content))
+        {
+            return stream_get_contents($content);
+        }
+
+        return $content;
+    }
 } 

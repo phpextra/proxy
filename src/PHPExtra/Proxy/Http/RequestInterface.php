@@ -113,4 +113,9 @@ interface RequestInterface extends HttpMessageInterface
      * @return bool
      */
     public function isNoCache();
+
+    /**
+     * @return string
+     */
+    public function getContent();
 }
