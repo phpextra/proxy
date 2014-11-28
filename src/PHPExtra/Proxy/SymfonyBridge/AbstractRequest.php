@@ -204,13 +204,8 @@ abstract class AbstractRequest extends SymfonyRequest implements RequestInterfac
     /**
      * {@inheritdoc}
      */
-    public function getContent()
+    public function getBody()
     {
-        $content = parent::getContent();
-        if(is_resource($content)) {
-            return stream_get_contents($content);
-        }
-
-        return $content;
+        return parent::getContent(false);
     }
 } 
