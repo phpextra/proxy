@@ -29,7 +29,7 @@ class DefaultCacheStrategy implements CacheStrategyInterface
      */
     public function canStoreResponseInCache(ResponseInterface $response, RequestInterface $request)
     {
-        return $this->isResponseFromCache($response) && $response->isSuccessful();
+        return $response->isSuccessful() && !$this->isResponseFromCache($response);
     }
 
     /**
