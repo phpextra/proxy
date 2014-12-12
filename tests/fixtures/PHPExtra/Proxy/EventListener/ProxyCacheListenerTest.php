@@ -63,4 +63,26 @@ class ProxyCacheListenerTest extends ProxyTestCase
         $this->assertNotNull($storedResponse);
         $this->assertEquals($response, $storedResponse);
     }
+
+    public function testResponseDateIsNotModifiedByCacheListener()
+    {
+        $now = \DateTime::createFromFormat('D, d M Y H:i:s T', 'Fri, 12 Dec 2014 12:46:14 GMT');
+
+        $this->cacheStrategy->setCanUseResponseFromCache(true);
+
+        $request = Request::create('/');
+        $response = new Response('"ok"');
+        $response->setDate($now);
+
+        $this->storage->save($request, $response);
+
+        $event = new ProxyRequestEvent($request, null, $this->proxy);
+        $event->setLogger(new LoggerProxy());
+        $this->proxyCacheListener->onProxyRequest($event);
+
+        $this->assertEquals('Fri, 12 Dec 2014 12:46:14 GMT', $response->getHeader('date')[0]);
+        $this->assertEquals('HIT', $response->getHeader('X-Cache')[0]);
+    }
+
+
 } 
