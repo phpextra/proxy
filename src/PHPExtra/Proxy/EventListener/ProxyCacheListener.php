@@ -54,6 +54,12 @@ class ProxyCacheListener implements ProxyListenerInterface
             $request = $event->getRequest();
 
             if($this->cacheStrategy->canUseResponseFromCache($request, $response)){
+
+                /**
+                 * The "Date" header field represents the date and time at which the message was originated
+                 * http://tools.ietf.org/html/rfc7231#section-7.1.1.2
+                 */
+
                 $event->getLogger()->debug('Response was read from cache');
                 $response->addHeader('X-Cache', 'HIT');
                 $response->addHeader('X-Cache-Hits', 1);
@@ -63,7 +69,6 @@ class ProxyCacheListener implements ProxyListenerInterface
                 $oldAge = $oldAge[0];
 
                 $response->setHeader('Age', $oldAge + ($now->getTimestamp() - $response->getDate()->getTimestamp()));
-                $response->setDate($now);
                 $event->setResponse($response);
             }
         }
