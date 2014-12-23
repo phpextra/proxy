@@ -22,7 +22,7 @@ interface RequestInterface extends IncomingRequestInterface
 //     *
 //     * @return string
 //     */
-//    public function getFingerprint();
+    public function getFingerprint();
 //
 //    /**
 //     * {@inheritdoc}
@@ -64,7 +64,7 @@ interface RequestInterface extends IncomingRequestInterface
 //     *
 //     * @return string
 //     */
-//    public function getHost();
+    public function getHost();
 //
 //    /**
 //     * Get host header value
@@ -82,7 +82,25 @@ interface RequestInterface extends IncomingRequestInterface
 //    /**
 //     * @return string
 //     */
-//    public function getPort();
+    public function getPort();
+
+    public function hasHeaderWithValue($proxyUniqueHeaderName, $proxyUniqueHeaderValue);
+
+    public function addHeader($proxyUniqueHeaderName, $proxyUniqueHeaderValue);
+
+    public function getClientIp();
+
+    public function getScheme();
+
+    public function getUri();
+
+    public function getPostParams();
+
+    public function getCookies();
+
+    public function isNoCache();
+
+    public function getMaxAge();
 //
 //    /**
 //     * @return array

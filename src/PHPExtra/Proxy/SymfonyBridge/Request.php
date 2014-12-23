@@ -13,11 +13,6 @@ use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 class Request extends \PHPExtra\Proxy\Http\Request
 {
     /**
-     * @var SymfonyRequest
-     */
-    private $symfonyRequest;
-
-    /**
      * @param SymfonyRequest $symfonyRequest
      */
     function __construct(SymfonyRequest $symfonyRequest)

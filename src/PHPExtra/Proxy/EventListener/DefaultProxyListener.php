@@ -16,7 +16,6 @@ use PHPExtra\Proxy\Firewall\FirewallInterface;
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\Response;
 use PHPExtra\Proxy\ProxyInterface;
-use Psr\Log\LogLevel;
 
 /**
  * The DefaultProxyListener class
