@@ -83,6 +83,13 @@ class AccessLoggerListener implements ProxyListenerInterface
 
         $xcache = $response && $response->hasHeaderWithValue('x-cache', 'HIT') ? 'HIT' : 'MISS';
 
+        $postDumpLimit = 200;
+        $postData = json_encode($request->getPostParams());
+
+        if(strlen($postData) > $postDumpLimit){
+            $postData = substr($postData, 0, $postDumpLimit) . '...';
+        }
+
         $data = array();
         $data[] = $xcache;
         $data[] = bcdiv($time, 1000, 4); // milliseconds
@@ -92,6 +99,7 @@ class AccessLoggerListener implements ProxyListenerInterface
         $data[] = $response ? $response->getStatusCode() : '-'; // bytes
         $data[] = $response ? $response->getLength() : '-'; // bytes
         $data[] = sprintf('"%s"', $uagent);
+        $data[] = $postData;
 
         return $data;
     }
