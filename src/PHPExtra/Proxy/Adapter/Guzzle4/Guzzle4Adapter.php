@@ -8,6 +8,12 @@
 namespace PHPExtra\Proxy\Adapter\Guzzle4;
 
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ServerException;
+use PHPExtra\Proxy\Exception\BadGatewayException;
+use PHPExtra\Proxy\Exception\GatewayException;
+use PHPExtra\Proxy\Exception\GatewayTimeoutException;
 use PHPExtra\Proxy\Http\RequestInterface;
 use PHPExtra\Proxy\Http\Response;
 use PHPExtra\Proxy\Adapter\AbstractProxyAdapter;
@@ -40,10 +46,19 @@ class Guzzle4Adapter extends AbstractProxyAdapter
     {
         $guzzleRequest = $this->createGuzzleRequestFromRequest($request);
 
-        // @todo add support for exceptions
-        $guzzleResponse = $this->client->send($guzzleRequest);
+        try {
+            $guzzleResponse = $this->client->send($guzzleRequest);
+        } catch(RequestException $e) {
+            if($e instanceof ServerException) {
+                $this->getLogger()->error(sprintf('Remote server returned error response. Requested URI: %s', $e->getRequest()->getUrl()));
 
+                throw new BadGatewayException($request, $e);
+            } else if(!($e instanceof ClientException)) {
+                $this->getLogger()->error(sprintf('Remote server could not be contacted. Requested URI: %s', $e->getRequest()->getUrl()));
 
+                throw new GatewayTimeoutException($request, $e);
+            }
+        }
 
         /** @var \GuzzleHttp\Message\Response $guzzleResponse */
         $response = $this->createResponseFromGuzzleResponse($guzzleResponse);
