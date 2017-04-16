@@ -53,6 +53,14 @@ class DoctrineCacheStorage implements StorageInterface
      */
     public function save(RequestInterface $request, ResponseInterface $response, $lifetime = null)
     {
+        if($lifetime === null) {
+            $expireDate = $response->getExpireDate();
+            if($expireDate !== null) {
+                $now = new \DateTime();
+                $lifetime = $now->getTimestamp() - $expireDate->getTimestamp();
+            }
+        }
+
         $this->doctrineCacheAdapter->save($request->getFingerprint(), $response, $lifetime);
         return $this;
     }
